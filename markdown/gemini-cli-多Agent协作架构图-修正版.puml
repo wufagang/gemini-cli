@@ -1,0 +1,268 @@
+@startuml Gemini CLI 多Agent协作系统架构图
+!theme aws-orange
+
+title **Gemini CLI 多Agent协作系统架构图**\n基于Agent驱动的AI工具平台
+
+' 定义颜色
+!define MAIN_AGENT #1E40AF
+!define SUBAGENT #7C3AED
+!define A2A_SERVER #059669
+!define MCP_AGENT #DC2626
+!define TOOL_AGENT #EA580C
+!define EXTERNAL #6B7280
+!define DATA_LAYER #10B981
+
+' ========================================
+' 主Agent层 (Main Agent Layer)
+' ========================================
+rectangle "🤖 **主Agent层 (Primary Agent)**" as main_agent_layer MAIN_AGENT {
+
+  component [**GeminiCLI主Agent**\n(packages/cli)\n- 用户交互管理\n- AI对话控制\n- 任务调度协调] as main_agent
+
+  rectangle "Agent核心组件" as agent_core {
+    component [GeminiClient\nAI对话引擎] as gemini_client
+    component [AgentExecutor\nAgent执行器] as agent_executor
+    component [TaskManager\n任务管理器] as task_manager
+    component [ToolOrchestrator\n工具编排器] as tool_orchestrator
+  }
+
+  note top of main_agent
+    **主Agent职责：**
+    • 用户交互和会话管理
+    • AI对话流程控制
+    • Subagent任务调度
+    • 工具调用协调
+    • 终端UI渲染 (React+Ink)
+  end note
+}
+
+' ========================================
+' A2A Server (Agent-to-Agent通信中心)
+' ========================================
+rectangle "🔗 **A2A Server (Agent间通信中心)**" as a2a_server_layer A2A_SERVER {
+
+  component [**A2A Server**\n(packages/a2a-server)\n- Agent间通信协调\n- 任务生命周期管理\n- 状态同步分发] as a2a_server
+
+  rectangle "A2A核心服务" as a2a_core {
+    component [CoderAgentExecutor\nAgent执行器] as coder_executor
+    component [TaskWrapper\n任务包装器] as task_wrapper
+    component [ExecutionEventBus\n事件总线] as event_bus
+    component [HTTP API Server\nREST接口] as http_api
+  }
+
+  note top of a2a_server
+    **A2A Server职责：**
+    • Agent间通信协调
+    • 任务生命周期管理
+    • 状态同步和事件分发
+    • 多Agent会话管理
+  end note
+}
+
+' ========================================
+' Subagent层 (专用Agent系统)
+' ========================================
+rectangle "🎯 **Subagent层 (专用Agent系统)**" as subagent_layer SUBAGENT {
+
+  component [**CodeAnalyzer Agent**\n代码分析专家\n- 代码审查\n- 重构建议\n- 架构分析] as code_analyzer_agent
+
+  component [**FileManager Agent**\n文件管理专家\n- 文件操作\n- 目录管理\n- 批量处理] as file_manager_agent
+
+  component [**DevOps Agent**\n运维专家\n- 部署管理\n- 监控告警\n- CI/CD流程] as devops_agent
+
+  component [**Research Agent**\n研究助手\n- 信息搜索\n- 文档生成\n- 知识整理] as research_agent
+
+  rectangle "Subagent基础设施" as subagent_infra {
+    component [SubagentToolWrapper\n工具包装器] as subagent_wrapper
+    component [AgentDefinition\nAgent定义系统] as agent_definition
+    component [AgentRegistry\nAgent注册表] as agent_registry
+  }
+
+  note top of subagent_layer
+    **Subagent系统特点：**
+    • 专门化任务处理
+    • 可作为工具被调用
+    • 独立的AI模型配置
+    • 标准化输入输出接口
+  end note
+}
+
+' ========================================
+' MCP Agent生态 (第三方Agent)
+' ========================================
+rectangle "🌐 **MCP Agent生态 (第三方Agent)**" as mcp_agent_layer MCP_AGENT {
+
+  component [**Database Agent**\n数据库操作\n- SQL查询\n- 数据分析\n- 报表生成] as db_agent
+
+  component [**API Testing Agent**\nAPI测试\n- 接口测试\n- 性能监控\n- 自动化验证] as api_test_agent
+
+  component [**Cloud Services Agent**\n云服务管理\n- AWS/GCP/Azure\n- 资源管理\n- 成本优化] as cloud_agent
+
+  component [**Slack Agent**\n团队协作\n- 消息发送\n- 工作流集成\n- 通知管理] as slack_agent
+
+  rectangle "MCP基础设施" as mcp_infra {
+    component [McpClientManager\nMCP客户端管理] as mcp_client_manager
+    component [MCPProxyTool\nMCP代理工具] as mcp_proxy
+    component [ToolDiscovery\n工具发现引擎] as tool_discovery
+  }
+
+  note top of mcp_agent_layer
+    **MCP Agent生态：**
+    • 基于MCP协议标准化
+    • 社区驱动工具提供者
+    • 可插拔能力扩展
+    • 跨语言跨平台支持
+  end note
+}
+
+' ========================================
+' 工具Agent层 (内置工具Agent)
+' ========================================
+rectangle "🔧 **工具Agent层 (内置工具)**" as tool_agent_layer TOOL_AGENT {
+
+  rectangle "系统工具Agent" as system_tools {
+    component [ShellAgent\nShell执行专家] as shell_agent
+    component [FileAgent\n文件操作专家] as file_agent
+    component [GitAgent\nGit操作专家] as git_agent
+    component [SearchAgent\n搜索专家] as search_agent
+  }
+
+  rectangle "网络工具Agent" as network_tools {
+    component [WebAgent\n网络请求专家] as web_agent
+    component [APIAgent\nAPI调用专家] as api_agent
+  }
+
+  rectangle "开发工具Agent" as dev_tools {
+    component [CodeAgent\n代码操作专家] as code_agent
+    component [TestAgent\n测试执行专家] as test_agent
+    component [BuildAgent\n构建专家] as build_agent
+  }
+
+  note top of tool_agent_layer
+    **内置工具Agent：**
+    • 高度优化的核心工具
+    • 直接集成无协议开销
+    • 安全沙箱执行环境
+    • 丰富的文件系统操作
+  end note
+}
+
+' ========================================
+' 外部服务层
+' ========================================
+cloud "🌍 **外部服务层**" as external_services EXTERNAL {
+
+  rectangle "Google AI生态" as google_ai {
+    component [Gemini API\nAI模型服务] as gemini_api
+    component [Vertex AI\n企业AI平台] as vertex_ai
+    component [Google Search\n搜索grounding] as google_search
+  }
+
+  rectangle "开发生态" as dev_ecosystem {
+    component [GitHub\n代码仓库] as github
+    component [VS Code\n集成开发环境] as vscode
+    component [Docker\n容器运行时] as docker
+  }
+
+  rectangle "企业服务" as enterprise_services {
+    component [Slack\n团队协作] as slack
+    component [Jira\n项目管理] as jira
+    component [Cloud Services\n云服务平台] as cloud_services
+  }
+}
+
+' ========================================
+' 数据和状态层
+' ========================================
+database "💾 **Agent状态和数据层**" as data_layer DATA_LAYER {
+  component [Agent配置存储] as agent_configs
+  component [任务状态存储] as task_states
+  component [会话历史存储] as conversation_history
+  component [工具缓存存储] as tool_cache
+  component [权限配置存储] as permission_configs
+}
+
+' ========================================
+' Agent间通信流 (核心数据流)
+' ========================================
+
+' 主Agent到A2A Server
+main_agent -down-> a2a_server : "Agent任务委派"
+tool_orchestrator -down-> coder_executor : "任务提交"
+task_manager -down-> task_wrapper : "任务管理"
+
+' A2A Server到Subagent
+a2a_server -down-> subagent_layer : "Subagent调用"
+coder_executor -down-> code_analyzer_agent : "代码分析任务"
+coder_executor -down-> file_manager_agent : "文件管理任务"
+event_bus -down-> subagent_infra : "状态同步"
+
+' 主Agent到MCP Agent
+main_agent -right-> mcp_agent_layer : "MCP工具调用"
+tool_orchestrator -right-> mcp_client_manager : "MCP工具发现"
+mcp_proxy -right-> db_agent : "数据库操作"
+mcp_proxy -right-> api_test_agent : "API测试"
+
+' 主Agent到工具Agent
+main_agent -down-> tool_agent_layer : "内置工具调用"
+tool_orchestrator -down-> shell_agent : "Shell执行"
+tool_orchestrator -down-> file_agent : "文件操作"
+tool_orchestrator -down-> web_agent : "网络请求"
+
+' 所有Agent到外部服务
+main_agent -right-> gemini_api : "AI API调用"
+subagent_layer -right-> external_services : "外部服务集成"
+mcp_agent_layer -right-> external_services : "第三方服务"
+tool_agent_layer -right-> external_services : "系统资源访问"
+
+' 数据层连接
+main_agent -down-> data_layer : "状态持久化"
+a2a_server -down-> data_layer : "任务状态管理"
+subagent_layer -down-> data_layer : "Agent配置"
+mcp_agent_layer -down-> data_layer : "工具缓存"
+
+' ========================================
+' 关键特性标注
+' ========================================
+
+note left of main_agent_layer
+  **🚀 Agent协作优势**
+  • 任务专业化分工
+  • 并行处理能力
+  • 模块化可扩展
+  • 故障隔离机制
+  • 负载均衡分发
+end note
+
+note right of a2a_server_layer
+  **⚡ 通信中心特性**
+  • 标准化Agent协议
+  • 任务生命周期管理
+  • 实时状态同步
+  • 消息队列机制
+  • 错误恢复机制
+end note
+
+note bottom of mcp_agent_layer
+  **🔌 MCP生态价值**
+  • 社区驱动扩展
+  • 跨语言兼容
+  • 标准化接口
+  • 热插拔能力
+  • 丰富工具库
+end note
+
+' ========================================
+' Agent执行流程标注
+' ========================================
+
+note top of main_agent_layer
+  **🎯 多Agent执行流程**
+  1. 用户输入 → 主Agent分析
+  2. 任务分解 → 选择合适Agent
+  3. 通过A2A Server委派任务
+  4. Subagent/MCP Agent执行
+  5. 结果聚合 → 用户展示
+end note
+
+@enduml

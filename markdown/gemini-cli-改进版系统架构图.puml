@@ -1,0 +1,370 @@
+@startuml Gemini CLI 系统架构图 - 改进版
+!theme aws-orange
+!define DARKBLUE #1E3A8A
+!define BLUE #3B82F6
+!define LIGHTBLUE #DBEAFE
+!define GREEN #10B981
+!define LIGHTGREEN #D1FAE5
+!define ORANGE #F59E0B
+!define LIGHTORANGE #FEF3C7
+!define PURPLE #8B5CF6
+!define LIGHTPURPLE #EDE9FE
+!define RED #EF4444
+!define LIGHTRED #FEE2E2
+
+title **Gemini CLI 系统架构图**\n分层架构 + 模块化设计 + 安全沙箱
+
+!procedure $layer($name, $color, $description)
+  rectangle "$name" $color {
+    note top : $description
+  }
+!endprocedure
+
+' ========================================
+' 第一层：用户交互层 (Presentation Layer)
+' ========================================
+package "🖥️ **用户交互层 (CLI Package)**" as presentation_layer LIGHTBLUE {
+
+  note top of presentation_layer
+    **核心职责：**
+    • 处理用户输入和命令解析
+    • 提供现代化终端UI体验
+    • 管理主题、快捷键、Vim模式
+    • 格式化输出和流式内容渲染
+  end note
+
+  package "React + Ink 终端UI框架" as ui_framework BLUE {
+    [AppContainer\n应用容器] as app_container
+    [ChatInterface\n对话界面] as chat_interface
+    [StreamingContent\n流式内容渲染] as streaming_content
+    [ThemeProvider\n主题管理] as theme_provider
+    [VimModeProvider\nVim模式支持] as vim_provider
+
+    note bottom of ui_framework
+      **技术特性：**
+      • 声明式UI组件
+      • 实时响应渲染
+      • 无障碍支持
+      • 键盘快捷键
+    end note
+  }
+
+  package "命令处理模块" as command_processing BLUE {
+    [CommandParser\n命令解析器] as cmd_parser
+    [ArgumentValidator\n参数验证] as arg_validator
+    [OutputFormatter\n输出格式化] as output_formatter
+
+    note bottom of command_processing
+      **处理流程：**
+      输入 → 解析 → 验证 → 执行 → 格式化
+    end note
+  }
+}
+
+' ========================================
+' 第二层：业务逻辑层 (Business Logic Layer)
+' ========================================
+package "🎯 **业务逻辑层 (Core Package)**" as business_layer LIGHTPURPLE {
+
+  note top of business_layer
+    **核心职责：**
+    • Gemini AI客户端和对话管理
+    • 工具系统注册和执行协调
+    • 多层配置系统和策略引擎
+    • 认证管理和安全控制
+  end note
+
+  package "AI 客户端核心" as ai_core PURPLE {
+    [GeminiClient\nAI客户端] as gemini_client
+    [ChatCompressionService\n对话压缩] as chat_compression
+    [LoopDetectionService\n循环检测] as loop_detection
+    [ModelRouterService\n模型路由] as model_router
+
+    note bottom of ai_core
+      **核心能力：**
+      • 流式AI对话
+      • 智能上下文管理
+      • 自动模型选择
+      • 防死循环机制
+    end note
+  }
+
+  package "工具注册中心" as tool_registry PURPLE {
+    [ToolRegistry\n工具注册表] as tool_registry_comp
+    [McpClientManager\nMCP客户端管理] as mcp_manager
+    [ToolDiscovery\n工具发现] as tool_discovery
+    [ToolValidator\n工具验证] as tool_validator
+
+    note bottom of tool_registry
+      **管理功能：**
+      • 内置工具注册
+      • MCP协议集成
+      • 动态工具发现
+      • 工具权限验证
+    end note
+  }
+
+  package "配置和安全管理" as config_security PURPLE {
+    [ConfigManager\n配置管理器] as config_manager
+    [PolicyEngine\n策略引擎] as policy_engine
+    [AuthProvider\n认证提供者] as auth_provider
+    [SandboxManager\n沙箱管理器] as sandbox_manager
+
+    note bottom of config_security
+      **安全特性：**
+      • 多层配置覆盖
+      • 企业策略控制
+      • 多种认证方式
+      • 沙箱安全执行
+    end note
+  }
+}
+
+' ========================================
+' 第三层：工具执行层 (Tool Execution Layer)
+' ========================================
+package "🔧 **工具执行层 (Tools Layer)**" as execution_layer LIGHTGREEN {
+
+  note top of execution_layer
+    **核心职责：**
+    • 提供20+内置工具集合
+    • 支持MCP协议第三方工具
+    • 在沙箱环境中安全执行
+    • 处理文件、网络、系统操作
+  end note
+
+  package "内置工具集 (Built-in Tools)" as builtin_tools GREEN {
+    [ReadFileTool\n文件读取] as read_tool
+    [WriteFileTool\n文件写入] as write_tool
+    [EditTool\n文件编辑] as edit_tool
+    [ShellTool\nShell执行] as shell_tool
+    [GrepTool\n代码搜索] as grep_tool
+    [WebFetchTool\n网络请求] as web_fetch_tool
+
+    note bottom of builtin_tools
+      **工具分类：**
+      • 文件操作：读取、写入、编辑
+      • 系统交互：Shell、目录列表
+      • 搜索导航：Grep、Glob匹配
+      • 网络通信：HTTP请求、搜索
+    end note
+  }
+
+  package "扩展工具集 (Extension Tools)" as extension_tools GREEN {
+    [MCPProxyTool\nMCP代理工具] as mcp_proxy
+    [CustomToolLoader\n自定义工具加载器] as custom_loader
+    [ThirdPartyTools\n第三方工具] as third_party_tools
+
+    note bottom of extension_tools
+      **扩展机制：**
+      • MCP协议标准化
+      • 动态工具加载
+      • 社区生态支持
+    end note
+  }
+}
+
+' ========================================
+' 第四层：基础服务层 (Infrastructure Layer)
+' ========================================
+package "⚙️ **基础服务层 (Services Layer)**" as infrastructure_layer LIGHTORANGE {
+
+  note top of infrastructure_layer
+    **核心职责：**
+    • 提供跨模块的基础服务
+    • 处理文件系统和Git集成
+    • 管理Shell执行和沙箱环境
+    • 支持遥测、日志和事件通信
+  end note
+
+  package "核心服务集群" as core_services ORANGE {
+    [FileDiscoveryService\n文件发现服务] as file_discovery
+    [GitService\nGit集成服务] as git_service
+    [ShellExecutionService\nShell执行服务] as shell_execution
+    [TelemetryService\n遥测服务] as telemetry
+    [MessageBus\n事件总线] as message_bus
+
+    note bottom of core_services
+      **服务能力：**
+      • 智能文件发现和过滤
+      • Git版本控制集成
+      • 安全Shell命令执行
+      • 使用数据收集分析
+      • 组件间事件通信
+    end note
+  }
+
+  package "专用服务" as specialized_services ORANGE {
+    [ChatRecordingService\n对话记录] as chat_recording
+    [TrustService\n信任管理] as trust_service
+    [CredentialStorage\n凭据存储] as credential_storage
+
+    note bottom of specialized_services
+      **专业功能：**
+      • 对话历史管理
+      • 工作区信任控制
+      • 安全凭据存储
+    end note
+  }
+}
+
+' ========================================
+' 第五层：外部集成层 (External Integration Layer)
+' ========================================
+package "🌐 **外部集成层 (External Systems)**" as external_layer LIGHTRED {
+
+  note top of external_layer
+    **核心职责：**
+    • 集成Google AI和Cloud服务
+    • 连接MCP生态系统
+    • 支持多种容器运行时
+    • 整合开发工具和IDE
+  end note
+
+  package "Google 服务生态" as google_ecosystem RED {
+    [Gemini API\nAI服务] as gemini_api
+    [Google Search API\n搜索服务] as search_api
+    [Google OAuth\n认证服务] as oauth_service
+    [Vertex AI\n企业AI平台] as vertex_ai
+    [Google Cloud Storage\n云存储] as gcs
+
+    note bottom of google_ecosystem
+      **服务集成：**
+      • Gemini 2.5 Pro AI模型
+      • 实时搜索grounding
+      • 企业级OAuth认证
+      • Vertex AI企业部署
+    end note
+  }
+
+  package "开发者生态" as developer_ecosystem RED {
+    [VS Code\n代码编辑器] as vscode
+    [Docker/Podman\n容器运行时] as containers
+    [MCP Servers\n第三方工具服务] as mcp_servers
+    [File System\n文件系统] as filesystem
+
+    note bottom of developer_ecosystem
+      **开发集成：**
+      • IDE上下文同步
+      • 容器化沙箱执行
+      • MCP协议工具扩展
+      • 本地文件系统访问
+    end note
+  }
+}
+
+' ========================================
+' 数据存储层 (Data Layer)
+' ========================================
+database "💾 **数据存储层**" as data_layer {
+  [配置文件\n~/.gemini/settings.json] as config_files
+  [缓存存储\n临时数据和API响应] as cache_storage
+  [凭据存储\n加密的认证信息] as creds_storage
+  [对话历史\n会话记录和检查点] as chat_history
+  [扩展存储\n第三方工具和主题] as extension_storage
+
+  note bottom of data_layer
+    **存储策略：**
+    • 分层配置文件管理
+    • 智能缓存和过期机制
+    • 安全凭据加密存储
+    • 对话历史持久化
+    • 扩展生命周期管理
+  end note
+}
+
+' ========================================
+' 核心数据流连接 (从上到下)
+' ========================================
+
+' 用户交互层 → 业务逻辑层
+presentation_layer -down-> business_layer : **用户请求处理**
+app_container -down-> gemini_client : "发送用户输入"
+chat_interface -down-> tool_registry_comp : "获取可用工具"
+streaming_content -down-> gemini_client : "接收AI响应流"
+
+' 业务逻辑层 → 工具执行层
+business_layer -down-> execution_layer : **工具调用执行**
+tool_registry_comp -down-> builtin_tools : "内置工具注册"
+mcp_manager -down-> extension_tools : "MCP工具集成"
+sandbox_manager -down-> builtin_tools : "沙箱安全执行"
+
+' 工具执行层 → 基础服务层
+execution_layer -down-> infrastructure_layer : **基础服务调用**
+shell_tool -down-> shell_execution : "Shell命令执行"
+edit_tool -down-> git_service : "Git操作集成"
+builtin_tools -down-> file_discovery : "文件系统操作"
+
+' 基础服务层 → 外部集成层
+infrastructure_layer -down-> external_layer : **外部系统集成**
+shell_execution -down-> containers : "容器沙箱执行"
+core_services -down-> filesystem : "文件系统访问"
+
+' 业务逻辑层 → 外部集成层 (直接连接)
+gemini_client -right-> gemini_api : "**AI API调用**"
+auth_provider -right-> oauth_service : "OAuth认证"
+mcp_manager -right-> mcp_servers : "MCP协议通信"
+
+' 数据存储连接
+business_layer -down-> data_layer : **数据持久化**
+config_manager -down-> config_files : "配置管理"
+auth_provider -down-> creds_storage : "凭据存储"
+chat_compression -down-> chat_history : "对话记录"
+
+' ========================================
+' 关键架构特性标注
+' ========================================
+
+note top of presentation_layer
+  **🎨 现代终端UI**
+  React + Ink 框架
+  声明式组件开发
+end note
+
+note top of business_layer
+  **🧠 AI核心大脑**
+  Gemini客户端
+  工具编排引擎
+end note
+
+note top of execution_layer
+  **🛠️ 丰富工具生态**
+  20+ 内置工具
+  MCP扩展支持
+end note
+
+note top of infrastructure_layer
+  **⚡ 高性能服务**
+  异步处理
+  事件驱动架构
+end note
+
+note top of external_layer
+  **🔗 开放集成**
+  Google生态
+  开发者工具
+end note
+
+' ========================================
+' 安全和性能标注
+' ========================================
+
+note left of sandbox_manager
+  **🔒 多层安全防护**
+  • Docker/Podman 容器隔离
+  • macOS Seatbelt 沙箱
+  • 工作区信任机制
+  • 用户确认流程
+  • 命令注入防护
+end note
+
+note right of gemini_client
+  **⚡ 性能优化特性**
+  • 流式响应处理
+  • 智能上下文压缩
+  • 自适应内存管理
+  • 多级缓存策略
+  • 异步并发执行
+end note
+
+@enduml
