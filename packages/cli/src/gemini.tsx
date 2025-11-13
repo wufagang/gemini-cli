@@ -252,7 +252,9 @@ export async function startInteractiveUI(
 
 export async function main() {
   setupUnhandledRejectionHandler();
+  process.stderr.write('🚀 Gemini CLI main() 函数已启动！\n');
   const settings = loadSettings();
+
   migrateDeprecatedSettings(
     settings,
     // Temporary extension manager only used during this non-interactive UI phase.
@@ -283,7 +285,7 @@ export async function main() {
   });
   consolePatcher.patch();
   registerCleanup(consolePatcher.cleanup);
-
+  console.error('测试一下');
   dns.setDefaultResultOrder(
     validateDnsResolutionOrder(settings.merged.advanced?.dnsResolutionOrder),
   );

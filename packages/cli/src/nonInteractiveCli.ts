@@ -269,11 +269,15 @@ export async function runNonInteractive({
           handleMaxTurnsExceededError(config);
         }
         const toolCallRequests: ToolCallRequestInfo[] = [];
+        process.stderr.write('我是第 ' + turnCount + ' 次调用\n');
 
         const responseStream = geminiClient.sendMessageStream(
           currentMessages[0]?.parts || [],
           abortController.signal,
           prompt_id,
+        );
+        process.stderr.write(
+          '内容： ' + JSON.stringify(currentMessages[0]?.parts || []),
         );
 
         let responseText = '';
@@ -281,7 +285,7 @@ export async function runNonInteractive({
           if (abortController.signal.aborted) {
             handleCancellationError(config);
           }
-
+          process.stderr.write('相应 ' + JSON.stringify(event));
           if (event.type === GeminiEventType.Content) {
             if (streamFormatter) {
               streamFormatter.emitEvent({
