@@ -399,6 +399,20 @@ export class ToolRegistry {
     this.messageBus = messageBus;
   }
 }
+// 注册工具
+registerTool(tool: AnyDeclarativeTool): void {
+    if (this.allKnownTools.has(tool.name)) {
+      if (tool instanceof DiscoveredMCPTool) {
+        tool = tool.asFullyQualifiedTool();
+      } else {
+        // Decide on behavior: throw error, log warning, or allow overwrite
+        debugLogger.warn(
+          `Tool with name "${tool.name}" is already registered. Overwriting.`,
+        );
+      }
+    }
+    this.allKnownTools.set(tool.name, tool);
+  }
 ```
 
 ###### 工具注册流程
@@ -436,6 +450,8 @@ sequenceDiagram
 ```
 
 ###### 工具优先级排序机制
+
+内置工具>DiscoveredTool>DiscoveredMCPTool(根据serverName字符串排序)
 
 ```typescript
 // 工具排序优先级：内置 > 发现的 > MCP
@@ -571,56 +587,71 @@ const parameterSchema: JSONSchema = {
 
 ###### 命令行工具发现
 
+作用是动态发现并注册工具。类似于Java中的反射机制或插件系统这种设计允许系统在运行时动态发现和加载新的工具，提供了很好的扩展性。
+
 ```typescript
 // 通过命令行发现外部工具
 private async discoverAndRegisterToolsFromCommand(): Promise<void> {
+1. 获取发现命令
+
   const discoveryCmd = this.config.getToolDiscoveryCommand();
-  if (!discoveryCmd) return;
-
-  debugLogger.log(`执行工具发现命令: ${discoveryCmd}`);
-
-  try {
-    // 执行外部命令获取工具定义
-    const cmdParts = discoveryCmd.split(/\s+/);
-    const proc = spawn(cmdParts[0], cmdParts.slice(1), {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      timeout: 30000 // 30秒超时
-    });
-
-    // 收集命令输出
-    let stdout = '';
-    proc.stdout?.on('data', data => stdout += data);
-
-    await new Promise((resolve, reject) => {
-      proc.on('close', code => {
-        if (code === 0) resolve(void 0);
-        else reject(new Error(`工具发现命令退出码: ${code}`));
-      });
-      proc.on('error', reject);
-    });
-
-    // 解析工具定义JSON
-    const discoveredItems = JSON.parse(stdout.trim());
-
-    // 注册发现的工具
-    const functions: FunctionDeclaration[] = discoveredItems.functions || [];
-    for (const func of functions) {
-      const parameters = convertToJSONSchema(func.parameters);
-
-      this.registerTool(new DiscoveredTool(
-        this.config,
-        func.name,
-        DISCOVERED_TOOL_PREFIX + func.name, // 'discovered:'前缀
-        func.description ?? '',
-        parameters,
-        this.messageBus
-      ));
-
-      debugLogger.log(`已注册发现工具: ${func.name}`);
-    }
-  } catch (error) {
-    debugLogger.warn(`工具发现失败: ${error}`);
+  if (!discoveryCmd) {
+    return;
   }
+
+
+  2. 解析并执行外部命令
+
+  const cmdParts = parse(discoveryCmd);
+  const proc = spawn(cmdParts[0] as string, cmdParts.slice(1) as string[]);
+
+  3. 收集命令输出
+
+  这里使用了事件监听机制（类似Java中的Observer模式）：
+  proc.stdout.on('data', (data) => {
+      // 处理标准输出数据
+      stdout += stdoutDecoder.write(data);
+  });
+
+  proc.stderr.on('data', (data) => {
+      // 处理错误输出数据
+      stderr += stderrDecoder.write(data);
+  });
+
+  4. 安全限制
+
+  代码设置了10MB的输出限制，防止内存溢出：
+  const MAX_STDOUT_SIZE = 10 * 1024 * 1024; // 10MB limit
+  if (stdoutByteLength + data.length > MAX_STDOUT_SIZE) {
+      sizeLimitExceeded = true;
+      proc.kill();
+  }
+
+  5. 等待进程完成
+
+  await new Promise<void>((resolve, reject) => {
+      proc.on('close', (code) => {
+          if (code !== 0) {
+              reject(new Error(`Command failed with exit code ${code}`));
+          }
+          resolve();
+      });
+  });
+
+
+  6. 解析JSON并注册工具
+
+  const discoveredItems = JSON.parse(stdout.trim());
+  for (const tool of discoveredItems) {
+      // 提取函数声明
+      if (Array.isArray(tool['function_declarations'])) {
+          functions.push(...tool['function_declarations']);
+      }
+      // 注册工具
+      this.registerTool(new DiscoveredTool(...));
+  }
+  }
+
 }
 ```
 
@@ -1085,11 +1116,13 @@ interface DeclarativeTool {
   readonly name: string; // 唯一标识
   readonly displayName: string; // 显示名称
   readonly description: string; // 功能描述
-  readonly kind: Kind; // 工具类型
+  readonly kind: Kind; // 工具类型 read, edit, delete, move, search, execute, think ,fetch,other
   readonly parameterSchema: JSONSchema; // 参数模式
   readonly outputsMarkdown: boolean; // 输出格式
   readonly supportsStreaming: boolean; // 流式支持
-
+  readonly messageBus?: MessageBus;
+  readonly extensionName?: string;
+  readonly extensionId?: string;
   // 执行接口
   execute(params: unknown): Promise<ToolResult>;
 }

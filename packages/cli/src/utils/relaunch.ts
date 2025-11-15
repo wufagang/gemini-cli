@@ -27,6 +27,11 @@ export async function relaunchAppInChildProcess(
   additionalNodeArgs: string[],
   additionalScriptArgs: string[],
 ) {
+  process.stderr.write(
+    '🚀 Gemini CLI main() GEMINI_CLI_NO_RELAUNCH！ \n' +
+      process.env['GEMINI_CLI_NO_RELAUNCH'] +
+      '\n',
+  );
   if (process.env['GEMINI_CLI_NO_RELAUNCH']) {
     return;
   }

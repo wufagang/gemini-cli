@@ -1,6 +1,7 @@
 # Gemini CLI 完整交互流程详解
 
 ## 📋 目录
+
 1. [流程概览](#流程概览)
 2. [详细流程分析](#详细流程分析)
 3. [关键代码路径](#关键代码路径)
@@ -75,7 +76,7 @@ export async function main() {
     await startInteractiveUI(config, settings, startupWarnings);
   } else {
     // 📝 非交互式模式
-    await runNonInteractive({config, settings, input, prompt_id});
+    await runNonInteractive({ config, settings, input, prompt_id });
   }
 }
 ```
@@ -147,7 +148,9 @@ export class GeminiClient {
   private readonly compressionService: ChatCompressionService;
 
   // 🔥 核心消息处理方法
-  async *sendMessageStream(request: SendMessageRequest): AsyncGenerator<ServerGeminiStreamEvent, Turn> {
+  async *sendMessageStream(
+    request: SendMessageRequest,
+  ): AsyncGenerator<ServerGeminiStreamEvent, Turn> {
     try {
       // 1️⃣ 检查循环和上下文窗口
       if (this.loopDetector.isLooping(request)) {
@@ -160,7 +163,7 @@ export class GeminiClient {
       if (compressionInfo.status === CompressionStatus.COMPRESSED) {
         yield {
           type: GeminiEventType.ChatCompressed,
-          compressionInfo
+          compressionInfo,
         };
       }
 
@@ -181,7 +184,7 @@ export class GeminiClient {
         yield {
           type: GeminiEventType.StreamingContentDelta,
           content: chunk.text(),
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
       }
 
@@ -192,24 +195,25 @@ export class GeminiClient {
       if (functionCalls?.length > 0) {
         yield* this.handleToolCalls(functionCalls);
       }
-
     } catch (error) {
       yield {
         type: GeminiEventType.Error,
-        error: error.message
+        error: error.message,
       };
     }
   }
 
   // 🛠️ 工具调用处理
-  private async *handleToolCalls(functionCalls: FunctionCall[]): AsyncGenerator<ServerGeminiStreamEvent> {
+  private async *handleToolCalls(
+    functionCalls: FunctionCall[],
+  ): AsyncGenerator<ServerGeminiStreamEvent> {
     for (const call of functionCalls) {
       yield {
         type: GeminiEventType.ToolCallStarted,
         toolCall: {
           name: call.name,
-          args: call.args
-        }
+          args: call.args,
+        },
       };
 
       // 执行工具
@@ -218,7 +222,7 @@ export class GeminiClient {
       yield {
         type: GeminiEventType.ToolCallCompleted,
         toolCall: { name: call.name, args: call.args },
-        result: result
+        result: result,
       };
     }
   }
@@ -237,8 +241,8 @@ export class GeminiChat {
       role: 'user',
       parts: [
         { text: request.text },
-        ...this.buildAttachmentParts(request.attachments)
-      ]
+        ...this.buildAttachmentParts(request.attachments),
+      ],
     };
 
     this.history.push(userContent);
@@ -246,10 +250,10 @@ export class GeminiChat {
 
   // 🔧 构建工具定义
   private buildToolDeclarations(): FunctionDeclaration[] {
-    return this.toolRegistry.getFunctionDeclarations().map(tool => ({
+    return this.toolRegistry.getFunctionDeclarations().map((tool) => ({
       name: tool.name,
       description: tool.description,
-      parameters: tool.parameters
+      parameters: tool.parameters,
     }));
   }
 
@@ -261,8 +265,8 @@ export class GeminiChat {
       systemInstruction: this.getSystemInstruction(),
       generationConfig: {
         temperature: this.config.temperature,
-        maxOutputTokens: this.config.maxOutputTokens
-      }
+        maxOutputTokens: this.config.maxOutputTokens,
+      },
     };
   }
 }
@@ -313,7 +317,10 @@ export class ToolRegistry {
   }
 
   // 🏃 沙箱执行
-  private async executeInSandbox(tool: AnyDeclarativeTool, args: any): Promise<ToolResult> {
+  private async executeInSandbox(
+    tool: AnyDeclarativeTool,
+    args: any,
+  ): Promise<ToolResult> {
     const sandboxConfig = this.config.getSandboxConfig();
 
     if (sandboxConfig.enabled) {
@@ -341,7 +348,7 @@ export class ShellTool extends BaseDeclarativeTool<ShellParams, ToolResult> {
     if (!this.isCommandAllowed(command)) {
       return {
         success: false,
-        error: 'Command not allowed by security policy'
+        error: 'Command not allowed by security policy',
       };
     }
 
@@ -350,7 +357,7 @@ export class ShellTool extends BaseDeclarativeTool<ShellParams, ToolResult> {
       command,
       workingDirectory,
       timeout: this.config.toolTimeout,
-      sandboxEnabled: true
+      sandboxEnabled: true,
     };
 
     try {
@@ -359,12 +366,12 @@ export class ShellTool extends BaseDeclarativeTool<ShellParams, ToolResult> {
       return {
         success: result.exitCode === 0,
         output: result.output,
-        exitCode: result.exitCode
+        exitCode: result.exitCode,
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -378,7 +385,7 @@ export class ShellTool extends BaseDeclarativeTool<ShellParams, ToolResult> {
       // ... 更多危险模式
     ];
 
-    return !dangerousPatterns.some(pattern => pattern.test(command));
+    return !dangerousPatterns.some((pattern) => pattern.test(command));
   }
 }
 ```
@@ -408,13 +415,16 @@ export class SandboxManager {
   }
 
   // 🐳 Docker沙箱执行
-  private async executeInDocker(tool: AnyDeclarativeTool, args: any): Promise<ToolResult> {
+  private async executeInDocker(
+    tool: AnyDeclarativeTool,
+    args: any,
+  ): Promise<ToolResult> {
     const containerConfig = {
       image: this.config.sandboxImageUri,
       workdir: '/workspace',
       mounts: this.buildMounts(),
       env: this.buildEnvironment(),
-      user: 'node'
+      user: 'node',
     };
 
     const dockerCommand = this.buildDockerCommand(tool, args, containerConfig);
@@ -423,16 +433,22 @@ export class SandboxManager {
   }
 
   // 🍎 macOS Seatbelt沙箱
-  private async executeInSeatbelt(tool: AnyDeclarativeTool, args: any): Promise<ToolResult> {
+  private async executeInSeatbelt(
+    tool: AnyDeclarativeTool,
+    args: any,
+  ): Promise<ToolResult> {
     const profile = this.config.seatbeltProfile || 'permissive-open';
     const profilePath = path.join(__dirname, `sandbox-macos-${profile}.sb`);
 
     const seatbeltCommand = [
       'sandbox-exec',
-      '-f', profilePath,
-      '-D', `HOME=${os.homedir()}`,
-      '-D', `WORKSPACE=${this.workspaceRoot}`,
-      ...this.buildToolCommand(tool, args)
+      '-f',
+      profilePath,
+      '-D',
+      `HOME=${os.homedir()}`,
+      '-D',
+      `WORKSPACE=${this.workspaceRoot}`,
+      ...this.buildToolCommand(tool, args),
     ];
 
     return await this.executeCommand(seatbeltCommand);
@@ -641,7 +657,9 @@ interface DataFlow {
 ```typescript
 // packages/core/src/core/client.ts
 export class GeminiClient {
-  async *sendMessageStream(request: SendMessageRequest): AsyncGenerator<ServerGeminiStreamEvent, Turn> {
+  async *sendMessageStream(
+    request: SendMessageRequest,
+  ): AsyncGenerator<ServerGeminiStreamEvent, Turn> {
     try {
       // 1️⃣ 前置检查错误
       if (this.loopDetector.isLooping(request)) {
@@ -656,23 +674,22 @@ export class GeminiClient {
 
       // 2️⃣ API调用错误处理
       const stream = this.genAI.generateContentStream(geminiRequest);
-
     } catch (error) {
       // 3️⃣ 错误分类处理
       if (error instanceof RateLimitError) {
         yield {
           type: GeminiEventType.RateLimitExceeded,
-          retryAfter: error.retryAfter
+          retryAfter: error.retryAfter,
         };
       } else if (error instanceof TokenLimitError) {
         yield {
           type: GeminiEventType.TokenLimitExceeded,
-          limit: error.limit
+          limit: error.limit,
         };
       } else {
         yield {
           type: GeminiEventType.Error,
-          error: error.message
+          error: error.message,
         };
       }
     }
@@ -687,13 +704,13 @@ export class GeminiClient {
 export class RetryService {
   async executeWithRetry<T>(
     operation: () => Promise<T>,
-    options: RetryOptions = {}
+    options: RetryOptions = {},
   ): Promise<T> {
     const {
       maxRetries = 3,
       baseDelay = 1000,
       maxDelay = 10000,
-      backoffFactor = 2
+      backoffFactor = 2,
     } = options;
 
     let lastError: Error;
@@ -711,7 +728,7 @@ export class RetryService {
         // 🕐 指数退避延迟
         const delay = Math.min(
           baseDelay * Math.pow(backoffFactor, attempt),
-          maxDelay
+          maxDelay,
         );
 
         await this.sleep(delay);
@@ -760,8 +777,8 @@ export class ChatCompressionService {
     const recentContent = history.slice(splitPoint);
 
     // ⚡ 并行压缩多个内容块
-    const compressionPromises = this.chunkContent(oldContent).map(
-      chunk => this.compressChunk(chunk)
+    const compressionPromises = this.chunkContent(oldContent).map((chunk) =>
+      this.compressChunk(chunk),
     );
 
     const compressedChunks = await Promise.all(compressionPromises);
@@ -769,7 +786,7 @@ export class ChatCompressionService {
     return {
       compressedHistory: [...compressedChunks, ...recentContent],
       originalTokenCount: this.countTokens(history),
-      compressedTokenCount: this.countTokens(compressedChunks)
+      compressedTokenCount: this.countTokens(compressedChunks),
     };
   }
 }
@@ -780,7 +797,10 @@ export class ChatCompressionService {
 ```typescript
 // packages/core/src/utils/cache.ts
 export class SmartCache<K, V> {
-  private cache = new Map<K, { value: V; timestamp: number; accessCount: number }>();
+  private cache = new Map<
+    K,
+    { value: V; timestamp: number; accessCount: number }
+  >();
 
   get(key: K): V | undefined {
     const entry = this.cache.get(key);
@@ -807,7 +827,7 @@ export class SmartCache<K, V> {
     this.cache.set(key, {
       value,
       timestamp: Date.now(),
-      accessCount: 1
+      accessCount: 1,
     });
   }
 }
@@ -821,7 +841,7 @@ export class PerformanceMonitor {
   // 🔍 关键性能指标监控
   async measureOperation<T>(
     operationName: string,
-    operation: () => Promise<T>
+    operation: () => Promise<T>,
   ): Promise<T> {
     const startTime = performance.now();
     const startMemory = process.memoryUsage();
@@ -833,7 +853,7 @@ export class PerformanceMonitor {
       this.recordMetrics(operationName, {
         duration: performance.now() - startTime,
         memoryDelta: process.memoryUsage().heapUsed - startMemory.heapUsed,
-        status: 'success'
+        status: 'success',
       });
 
       return result;
@@ -842,7 +862,7 @@ export class PerformanceMonitor {
       this.recordMetrics(operationName, {
         duration: performance.now() - startTime,
         status: 'error',
-        error: error.message
+        error: error.message,
       });
       throw error;
     }
@@ -871,8 +891,10 @@ export class PerformanceMonitor {
 - **性能优化**: 流式处理、智能缓存、上下文压缩
 - **安全优先**: 沙箱隔离、权限控制、命令验证
 
-这个完整的交互流程展现了Gemini CLI作为现代AI助手工具的**工程杰作**，每个环节都经过精心设计和优化，为用户提供了安全、高效、流畅的AI交互体验。
+这个完整的交互流程展现了Gemini
+CLI作为现代AI助手工具的**工程杰作**，每个环节都经过精心设计和优化，为用户提供了安全、高效、流畅的AI交互体验。
 
 ---
 
-*本文档基于Gemini CLI项目源码的深入分析，详细展现了从用户输入到系统响应的完整技术流程。*
+_本文档基于Gemini
+CLI项目源码的深入分析，详细展现了从用户输入到系统响应的完整技术流程。_

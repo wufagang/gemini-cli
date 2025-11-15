@@ -1,6 +1,7 @@
 # Gemini CLI 项目启动和初始化流程深度解析
 
 ## 📋 目录
+
 1. [启动流程概览](#启动流程概览)
 2. [主入口点分析](#主入口点分析)
 3. [配置系统初始化](#配置系统初始化)
@@ -18,25 +19,121 @@
 
 ## 🚀 启动流程概览
 
-Gemini CLI的启动过程是一个精心设计的多阶段初始化流程，涉及环境检查、配置加载、服务初始化、认证设置等多个关键步骤。
+Gemini
+CLI的启动过程是一个精心设计的多阶段初始化流程，涉及环境检查、配置加载、服务初始化、认证设置等多个关键步骤。
 
 ### 核心启动阶段
 
 ```mermaid
-graph TD
-    A[🔸 程序入口] --> B[🔸 全局错误处理]
-    B --> C[🔸 设置加载]
-    C --> D[🔸 参数解析]
-    D --> E[🔸 环境检查]
-    E --> F{🔸 需要沙箱?}
-    F -->|是| G[🔸 沙箱启动]
-    F -->|否| H[🔸 配置初始化]
-    G --> H
-    H --> I[🔸 认证初始化]
-    I --> J[🔸 扩展加载]
-    J --> K[🔸 工具注册]
-    K --> L[🔸 UI初始化]
-    L --> M[🔸 应用启动]
+flowchart TD
+    A["开始 main() 函数"] --> B["setupUnhandledRejectionHandler<br>设置全局异常处理"]
+    B --> C["DEBUG: 函数已启动"]
+    C --> D["loadSettings<br>加载用户设置"]
+    D --> E["DEBUG: 用户设置"]
+    E --> F["migrateDeprecatedSettings<br>迁移旧版设置"]
+    F --> G["cleanupCheckpoints<br>清理检查点文件"]
+    G --> H["parseArguments<br>解析命令行参数"]
+    H --> I["DEBUG: argv 对象"]
+    I --> J{"检查参数兼容性<br>promptInteractive && !stdin.isTTY?"}
+    J -->|"是"| K["输出错误信息并退出<br>process.exit(1)"]
+    J -->|"否"| L["isDebugMode<br>判断调试模式"]
+    L --> M["ConsolePatcher<br>配置控制台输出"]
+    M --> N["registerCleanup<br>注册清理函数"]
+    N --> O["DEBUG: 测试一下"]
+    O --> P["dns.setDefaultResultOrder<br>设置DNS解析顺序"]
+    P --> Q["DEBUG: settings 完整信息"]
+    Q --> R{"检查认证配置<br>!selectedType?"}
+    R -->|"是"| S{"CLOUD_SHELL 环境?"}
+    S -->|"是"| T["设置 CLOUD_SHELL 认证"]
+    S -->|"否"| U["跳过认证设置"]
+    T --> U
+    R -->|"否"| U
+    U --> V["themeManager.loadCustomThemes<br>加载自定义主题"]
+    V --> W{"主题设置存在?"}
+    W -->|"是"| X["setActiveTheme<br>设置激活主题"]
+    W -->|"否"| Y["跳过主题设置"]
+    X --> Z{"主题设置成功?"}
+    Z -->|"否"| AA["输出主题警告"]
+    Z -->|"是"| Y
+    AA --> Y
+    Y --> BB["DEBUG: SANDBOX 检查结果"]
+    BB --> CC{"检查沙箱环境<br>!process.env['SANDBOX']?"}
+
+    CC -->|"否 在沙箱内"| DD["跳转到主应用逻辑"]
+    CC -->|"是 在沙箱外"| EE["计算内存参数<br>getNodeMemoryArgs"]
+    EE --> FF["loadSandboxConfig<br>加载沙箱配置"]
+    FF --> GG["DEBUG: sandboxConfig"]
+    GG --> HH{"沙箱配置存在?"}
+
+    HH -->|"否"| II["relaunchAppInChildProcess<br>重启子进程并退出"]
+    II --> JJ["process.exit(0)"]
+
+    HH -->|"是"| KK["loadCliConfig<br>加载部分配置"]
+    KK --> LL{"认证验证需要?"}
+    LL -->|"是"| MM["validateAuthMethod<br>验证认证方法"]
+    MM --> NN["partialConfig.refreshAuth<br>刷新认证"]
+    NN --> OO{"认证成功?"}
+    OO -->|"否"| PP["输出认证错误<br>process.exit(1)"]
+    OO -->|"是"| QQ["检查标准输入"]
+    LL -->|"否"| QQ
+    QQ --> RR["injectStdinIntoArgs<br>注入标准输入到参数"]
+    RR --> SS["relaunchOnExitCode<br>启动沙箱"]
+    SS --> TT["process.exit(0)"]
+
+    DD --> UU["DEBUG: 还继续吗"]
+    UU --> VV["loadCliConfig<br>加载完整配置"]
+    VV --> WW["DEBUG: config 对象"]
+    WW --> XX["getPolicyEngine<br>获取策略引擎"]
+    XX --> YY["createPolicyUpdater<br>创建策略更新器"]
+    YY --> ZZ["cleanupExpiredSessions<br>清理过期会话"]
+    ZZ --> AAA{"扩展列表模式?<br>getListExtensions()"}
+    AAA -->|"是"| BBB["输出扩展列表<br>process.exit(0)"]
+    AAA -->|"否"| CCC{"交互模式且TTY?"}
+    CCC -->|"是"| DDD["setRawMode(true)<br>设置原始模式"]
+    DDD --> EEE["注册信号处理器<br>SIGTERM/SIGINT"]
+    EEE --> FFF["detectAndEnableKittyProtocol<br>启用Kitty键盘协议"]
+    FFF --> GGG["setMaxSizedBoxDebugging<br>设置调试"]
+    CCC -->|"否"| GGG
+    GGG --> HHH["initializeApp<br>初始化应用"]
+    HHH --> III{"Google OAuth 且浏览器抑制?"}
+    III -->|"是"| JJJ["getOauthClient<br>预处理OAuth"]
+    III -->|"否"| KKK{"Zed集成实验功能?"}
+    JJJ --> KKK
+    KKK -->|"是"| LLL["runZedIntegration<br>运行Zed集成并返回"]
+    KKK -->|"否"| MMM["config.getQuestion<br>获取问题输入"]
+    MMM --> NNN["getStartupWarnings<br>获取启动警告"]
+    NNN --> OOO{"交互模式?<br>config.isInteractive()"}
+
+    OOO -->|"是"| PPP["startInteractiveUI<br>启动React UI界面"]
+    PPP --> QQQ["return 结束"]
+
+    OOO -->|"否"| RRR["config.initialize<br>初始化配置"]
+    RRR --> SSS{"非TTY模式?<br>!process.stdin.isTTY"}
+    SSS -->|"是"| TTT["readStdin<br>读取标准输入"]
+    TTT --> UUU["合并输入数据"]
+    UUU --> VVV{"输入存在?"}
+    SSS -->|"否"| VVV
+    VVV -->|"否"| WWW["输出错误信息<br>process.exit(1)"]
+    VVV -->|"是"| XXX["生成随机 prompt_id"]
+    XXX --> YYY["logUserPrompt<br>记录用户输入"]
+    YYY --> ZZZ["validateNonInteractiveAuth<br>验证非交互认证"]
+    ZZZ --> AAAA["runNonInteractive<br>运行非交互模式"]
+    AAAA --> BBBB["runExitCleanup<br>执行退出清理"]
+    BBBB --> CCCC["process.exit(0)"]
+
+    %% 样式定义
+    classDef startNode fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
+    classDef decisionNode fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef processNode fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef exitNode fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+    classDef debugNode fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+
+    %% 应用样式
+    class A startNode
+    class CC,HH,OOO decisionNode
+    class PPP,AAAA processNode
+    class K,PP,WWW,JJ,TT,CCCC,BBB exitNode
+    class C,E,I,O,Q,BB,GG,UU,WW debugNode
 ```
 
 ---
@@ -74,6 +171,7 @@ main().catch((error) => {
 ```
 
 **关键特性**：
+
 - ✅ **全局异常捕获**: 确保任何未处理的Promise rejection都被捕获
 - ✅ **错误分类处理**: 区分致命错误和普通错误
 - ✅ **优雅退出**: 提供适当的退出代码
@@ -106,12 +204,13 @@ export async function main() {
 
   // 6️⃣ DNS解析顺序优化
   dns.setDefaultResultOrder(
-    validateDnsResolutionOrder(settings.merged.advanced?.dnsResolutionOrder)
+    validateDnsResolutionOrder(settings.merged.advanced?.dnsResolutionOrder),
   );
 
   // 7️⃣ 认证类型默认设置
   if (!settings.merged.security?.auth?.selectedType) {
-    const isCloudShell = process.env['CLOUD_SHELL'] || process.env['CLOUDSHELL_GCLOUD_CONFIG'];
+    const isCloudShell =
+      process.env['CLOUD_SHELL'] || process.env['CLOUDSHELL_GCLOUD_CONFIG'];
     const hasApiKey = process.env['GEMINI_API_KEY'];
 
     if (isCloudShell) {
@@ -134,7 +233,7 @@ export async function main() {
   if (config.isInteractive()) {
     await startInteractiveUI(config, settings, startupWarnings);
   } else {
-    await runNonInteractive({config, settings, input, prompt_id});
+    await runNonInteractive({ config, settings, input, prompt_id });
   }
 }
 ```
@@ -154,24 +253,27 @@ export const USER_SETTINGS_DIR = path.dirname(USER_SETTINGS_PATH);
 
 // 🔄 配置迁移映射表
 const MIGRATION_MAP: Record<string, string> = {
-  accessibility: 'ui.accessibility',           // UI可访问性设置
-  allowedTools: 'tools.allowed',              // 允许的工具列表
-  autoAccept: 'tools.autoAccept',             // 工具自动接受
-  confirmedTools: 'tools.confirmed',          // 已确认的工具
-  customCommands: 'commands.custom',          // 自定义命令
-  debugMode: 'general.debugMode',             // 调试模式
-  defaultModel: 'ai.defaultModel',            // 默认AI模型
+  accessibility: 'ui.accessibility', // UI可访问性设置
+  allowedTools: 'tools.allowed', // 允许的工具列表
+  autoAccept: 'tools.autoAccept', // 工具自动接受
+  confirmedTools: 'tools.confirmed', // 已确认的工具
+  customCommands: 'commands.custom', // 自定义命令
+  debugMode: 'general.debugMode', // 调试模式
+  defaultModel: 'ai.defaultModel', // 默认AI模型
   experimentalFeatures: 'features.experimental', // 实验性功能
-  gitIgnore: 'files.respectGitIgnore',        // Git忽略文件
-  maxFileSize: 'files.maxSize',               // 最大文件大小
-  systemPrompt: 'ai.systemPrompt',            // 系统提示词
-  temperature: 'ai.temperature',              // AI温度参数
-  theme: 'ui.theme',                          // UI主题
-  trustedFolders: 'security.trustedFolders'   // 信任文件夹
+  gitIgnore: 'files.respectGitIgnore', // Git忽略文件
+  maxFileSize: 'files.maxSize', // 最大文件大小
+  systemPrompt: 'ai.systemPrompt', // 系统提示词
+  temperature: 'ai.temperature', // AI温度参数
+  theme: 'ui.theme', // UI主题
+  trustedFolders: 'security.trustedFolders', // 信任文件夹
 };
 
 // 📋 设置加载函数
-export function loadSettings(): { merged: Settings; startupWarnings: string[] } {
+export function loadSettings(): {
+  merged: Settings;
+  startupWarnings: string[];
+} {
   let userSettings: Partial<Settings> = {};
   const startupWarnings: string[] = [];
 
@@ -206,16 +308,20 @@ export function loadSettings(): { merged: Settings; startupWarnings: string[] } 
 export async function loadCliConfig(
   settings: Settings,
   sessionId: string,
-  argv: ArgumentsCamelCase<GeminiArguments>
+  argv: ArgumentsCamelCase<GeminiArguments>,
 ): Promise<Config> {
   // 1️⃣ 沙箱配置加载
-  const sandboxConfig = loadSandboxConfig(argv.sandbox, settings.advanced?.sandbox);
+  const sandboxConfig = loadSandboxConfig(
+    argv.sandbox,
+    settings.advanced?.sandbox,
+  );
 
   // 2️⃣ 工作目录和包含目录设置
   const cwd = process.cwd();
-  const includeDirectories = argv.includeDirectories?.split(',').map(dir =>
-    path.resolve(cwd, dir.trim())
-  ) || [];
+  const includeDirectories =
+    argv.includeDirectories
+      ?.split(',')
+      .map((dir) => path.resolve(cwd, dir.trim())) || [];
 
   // 3️⃣ 调试模式检查
   const debugMode = isDebugMode(argv);
@@ -224,7 +330,10 @@ export async function loadCliConfig(
   const policyEngineConfig = await buildPolicyEngineConfig(settings, debugMode);
 
   // 5️⃣ 工具配置处理
-  const allowedTools = processAllowedTools(argv.allowedTools, settings.tools?.allowed);
+  const allowedTools = processAllowedTools(
+    argv.allowedTools,
+    settings.tools?.allowed,
+  );
   const excludeTools = processExcludeTools(argv.excludeTools);
 
   // 6️⃣ 扩展管理器初始化
@@ -233,18 +342,15 @@ export async function loadCliConfig(
     settingsPath: Storage.getGlobalSettingsPath(),
     isDebug: debugMode,
     allowedTools,
-    excludeTools
+    excludeTools,
   });
 
   // 7️⃣ 扩展加载
   await extensionManager.loadExtensions();
 
   // 8️⃣ 内存层次加载
-  const { memoryContent, fileCount, filePaths } = await loadServerHierarchicalMemory(
-    cwd,
-    includeDirectories,
-    settings
-  );
+  const { memoryContent, fileCount, filePaths } =
+    await loadServerHierarchicalMemory(cwd, includeDirectories, settings);
 
   // 9️⃣ 最终配置对象构建
   return new Config({
@@ -264,7 +370,7 @@ export async function loadCliConfig(
     initialFileCount: fileCount,
     initialFilePaths: filePaths,
     telemetrySettings,
-    settings
+    settings,
   });
 }
 ```
@@ -301,7 +407,7 @@ export class Config {
       this.toolRegistry,
       this.messageBus,
       this.ideContextStore,
-      this
+      this,
     );
 
     // 5️⃣ 设置工具注册表的客户端引用
@@ -318,7 +424,7 @@ export class Config {
     const toolRegistry = new ToolRegistry(
       this,
       this.messageBus,
-      mcpClientManager
+      mcpClientManager,
     );
 
     // 📋 发现所有工具
@@ -392,10 +498,10 @@ export async function performInitialAuth(
 
 // 🎯 支持的认证类型
 export type AuthType =
-  | 'USE_GEMINI'        // Gemini API密钥
+  | 'USE_GEMINI' // Gemini API密钥
   | 'LOGIN_WITH_GOOGLE' // Google OAuth2
-  | 'CLOUD_SHELL'       // Cloud Shell环境
-  | 'SERVICE_ACCOUNT';  // 服务账户
+  | 'CLOUD_SHELL' // Cloud Shell环境
+  | 'SERVICE_ACCOUNT'; // 服务账户
 ```
 
 #### 📍 认证类型自动检测：`packages/cli/src/gemini.tsx`
@@ -403,8 +509,8 @@ export type AuthType =
 ```typescript
 // 🔍 智能认证类型检测
 if (!settings.merged.security?.auth?.selectedType) {
-  const isCloudShell = process.env['CLOUD_SHELL'] ||
-                      process.env['CLOUDSHELL_GCLOUD_CONFIG'];
+  const isCloudShell =
+    process.env['CLOUD_SHELL'] || process.env['CLOUDSHELL_GCLOUD_CONFIG'];
   const hasApiKey = process.env['GEMINI_API_KEY'];
   const hasVertexConfig = process.env['GOOGLE_GENAI_USE_VERTEXAI'];
 
@@ -425,7 +531,10 @@ if (!settings.merged.security?.auth?.selectedType) {
 
 ```typescript
 // 📍 OAuth重定向处理：packages/cli/src/core/auth.ts
-export function handleOAuthRedirect(url: string): { success: boolean; error?: string } {
+export function handleOAuthRedirect(url: string): {
+  success: boolean;
+  error?: string;
+} {
   try {
     const urlObj = new URL(url);
     const code = urlObj.searchParams.get('code');
@@ -491,7 +600,7 @@ export class ToolRegistry {
       new GlobTool(this.config),
       new WebFetchTool(this.config),
       new WebSearchTool(this.config),
-      new MemoryTool(this.config, this.messageBus)
+      new MemoryTool(this.config, this.messageBus),
     ];
 
     for (const tool of coreTools) {
@@ -514,7 +623,7 @@ export class ToolRegistry {
           this.config,
           toolSpec.name,
           toolSpec.description,
-          toolSpec.parameters
+          toolSpec.parameters,
         );
         this.registerTool(tool);
       }
@@ -544,16 +653,21 @@ export class McpClientManager {
         try {
           await this.connectToServer(serverName, serverConfig);
         } catch (error) {
-          console.warn(`Failed to connect to MCP server ${serverName}: ${error.message}`);
+          console.warn(
+            `Failed to connect to MCP server ${serverName}: ${error.message}`,
+          );
         }
-      }
+      },
     );
 
     await Promise.all(connectionPromises);
   }
 
   // 🔗 连接MCP服务器
-  private async connectToServer(serverName: string, config: MCPServerConfig): Promise<void> {
+  private async connectToServer(
+    serverName: string,
+    config: MCPServerConfig,
+  ): Promise<void> {
     const client = new McpClient(serverName, config, this.config);
 
     // 🤝 建立连接
@@ -569,7 +683,7 @@ export class McpClientManager {
         serverName,
         tool.name,
         client,
-        this.config
+        this.config,
       );
       this.discoveredTools.push(mcpTool);
     }
@@ -720,7 +834,7 @@ const VALID_SANDBOX_COMMANDS = ['docker', 'podman', 'sandbox-exec'];
 
 export function loadSandboxConfig(
   sandboxFlag?: boolean | string,
-  settingsSandbox?: SandboxSettings
+  settingsSandbox?: SandboxSettings,
 ): SandboxConfig {
   // 1️⃣ 检查是否已在沙箱中运行
   if (process.env['SANDBOX']) {
@@ -739,7 +853,7 @@ export function loadSandboxConfig(
     command,
     flags: buildSandboxFlags(command, settingsSandbox),
     environment: buildSandboxEnvironment(settingsSandbox),
-    imageUri: settingsSandbox?.imageUri || getDefaultImageUri()
+    imageUri: settingsSandbox?.imageUri || getDefaultImageUri(),
   };
 
   return config;
@@ -748,7 +862,7 @@ export function loadSandboxConfig(
 // 🔍 沙箱命令检测
 function getSandboxCommand(
   sandboxFlag?: boolean | string,
-  settings?: SandboxSettings
+  settings?: SandboxSettings,
 ): SandboxConfig['command'] | '' {
   // 🌍 环境变量优先级
   const envSandbox = process.env['GEMINI_SANDBOX']?.toLowerCase().trim() || '';
@@ -788,7 +902,7 @@ async function restartInSandbox(sandboxConfig: SandboxConfig): Promise<void> {
   if (requiresInteractiveAuth(settings.merged.security?.auth?.selectedType)) {
     throw new FatalSandboxError(
       'Interactive authentication is not supported in sandbox mode. ' +
-      'Please use API key or service account authentication.'
+        'Please use API key or service account authentication.',
     );
   }
 
@@ -806,13 +920,13 @@ async function restartInSandbox(sandboxConfig: SandboxConfig): Promise<void> {
   const sandboxArgs = [
     ...sandboxConfig.flags,
     process.argv[0], // node executable
-    ...process.argv.slice(1) // script and args
+    ...process.argv.slice(1), // script and args
   ];
 
   // 4️⃣ 在沙箱中重启进程
   const childProcess = spawn(sandboxConfig.command, sandboxArgs, {
     stdio: ['pipe', 'inherit', 'inherit'],
-    env: { ...process.env, SANDBOX: '1', ...sandboxConfig.environment }
+    env: { ...process.env, SANDBOX: '1', ...sandboxConfig.environment },
   });
 
   // 5️⃣ 传递输入数据
@@ -887,7 +1001,7 @@ Stack: ${error.stack}`;
 export class FatalError extends Error {
   constructor(
     message: string,
-    public readonly exitCode: number = 1
+    public readonly exitCode: number = 1,
   ) {
     super(message);
     this.name = 'FatalError';
@@ -931,7 +1045,7 @@ export class ConsolePatcher {
   patch(): void {
     const methods = ['log', 'warn', 'error', 'info', 'debug'];
 
-    methods.forEach(method => {
+    methods.forEach((method) => {
       this.originalMethods.set(method, console[method]);
 
       console[method] = (...args: any[]) => {
@@ -939,7 +1053,7 @@ export class ConsolePatcher {
         appEvents.emit(AppEvent.ConsoleOutput, {
           level: method,
           message: args.join(' '),
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
 
         // 🔄 调用原始方法
@@ -976,7 +1090,9 @@ try {
   });
 } catch (err) {
   if (err instanceof FatalConfigError) {
-    throw new FatalConfigError(`Invalid telemetry configuration: ${err.message}.`);
+    throw new FatalConfigError(
+      `Invalid telemetry configuration: ${err.message}.`,
+    );
   }
   throw err;
 }
@@ -987,7 +1103,7 @@ const sessionStats = {
   sessionId,
   nodeVersion: process.version,
   platform: os.platform(),
-  arch: os.arch()
+  arch: os.arch(),
 };
 ```
 
@@ -1013,7 +1129,8 @@ export function useMemoryMonitor(config: Config) {
       memoryMonitor.recordMetric('external', memoryUsage.external);
 
       // ⚠️ 内存警告阈值
-      if (memoryUsage.heapUsed > 500 * 1024 * 1024) { // 500MB
+      if (memoryUsage.heapUsed > 500 * 1024 * 1024) {
+        // 500MB
         console.warn('High memory usage detected:', memoryUsage);
       }
     }, 5000); // 每5秒检查一次
@@ -1033,7 +1150,7 @@ export class PerformanceMonitor {
   // 📏 操作计时
   async measureOperation<T>(
     operationName: string,
-    operation: () => Promise<T>
+    operation: () => Promise<T>,
   ): Promise<T> {
     const startTime = performance.now();
     const startMemory = process.memoryUsage();
@@ -1046,7 +1163,7 @@ export class PerformanceMonitor {
         duration: performance.now() - startTime,
         memoryDelta: process.memoryUsage().heapUsed - startMemory.heapUsed,
         status: 'success',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       return result;
@@ -1056,7 +1173,7 @@ export class PerformanceMonitor {
         duration: performance.now() - startTime,
         status: 'error',
         error: error.message,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
       throw error;
     }
@@ -1081,7 +1198,9 @@ function validateEnvironment(): string[] {
   const nodeVersion = process.version;
   const requiredVersion = '20.0.0';
   if (!semver.gte(nodeVersion, requiredVersion)) {
-    warnings.push(`Node.js ${requiredVersion} or higher is required. Current: ${nodeVersion}`);
+    warnings.push(
+      `Node.js ${requiredVersion} or higher is required. Current: ${nodeVersion}`,
+    );
   }
 
   // 2️⃣ 终端能力检查
@@ -1139,7 +1258,7 @@ export async function checkRequiredCommands(): Promise<{
       } catch (error) {
         missing.push(cmd);
       }
-    })
+    }),
   );
 
   return { available, missing };
@@ -1152,9 +1271,15 @@ export async function checkContainerEngines(): Promise<{
   sandboxExec: boolean;
 }> {
   const [docker, podman, sandboxExec] = await Promise.all([
-    commandExists('docker').then(() => true).catch(() => false),
-    commandExists('podman').then(() => true).catch(() => false),
-    commandExists('sandbox-exec').then(() => true).catch(() => false)
+    commandExists('docker')
+      .then(() => true)
+      .catch(() => false),
+    commandExists('podman')
+      .then(() => true)
+      .catch(() => false),
+    commandExists('sandbox-exec')
+      .then(() => true)
+      .catch(() => false),
   ]);
 
   return { docker, podman, sandboxExec };
@@ -1240,4 +1365,5 @@ Gemini CLI的启动流程展现了现代CLI应用的**工程杰作**：
 
 ---
 
-*本文档基于Gemini CLI项目源码的深入分析，详细展现了从程序启动到完全初始化的完整技术流程和关键实现细节。*
+_本文档基于Gemini
+CLI项目源码的深入分析，详细展现了从程序启动到完全初始化的完整技术流程和关键实现细节。_

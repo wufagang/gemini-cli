@@ -254,7 +254,7 @@ export async function main() {
   setupUnhandledRejectionHandler();
   process.stderr.write('🚀 Gemini CLI main() 函数已启动！\n');
   const settings = loadSettings();
-
+  process.stderr.write('🚀 Gemini CLI main() 用户设置！\n' + settings);
   migrateDeprecatedSettings(
     settings,
     // Temporary extension manager only used during this non-interactive UI phase.
@@ -269,7 +269,9 @@ export async function main() {
   await cleanupCheckpoints();
 
   const argv = await parseArguments(settings.merged);
-
+  process.stderr.write(
+    '🚀 Gemini CLI main() argv！\n' + JSON.stringify(argv, null, 2),
+  );
   // Check for invalid input combinations early to prevent crashes
   if (argv.promptInteractive && !process.stdin.isTTY) {
     debugLogger.error(
@@ -289,7 +291,9 @@ export async function main() {
   dns.setDefaultResultOrder(
     validateDnsResolutionOrder(settings.merged.advanced?.dnsResolutionOrder),
   );
-
+  process.stderr.write(
+    '🚀 Gemini CLI main() settings \n' + JSON.stringify(settings, null, 2),
+  );
   // Set a default auth type if one isn't set.
   if (!settings.merged.security?.auth?.selectedType) {
     if (process.env['CLOUD_SHELL'] === 'true') {
@@ -315,6 +319,9 @@ export async function main() {
   }
 
   // hop into sandbox if we are outside and sandboxing is enabled
+  process.stderr.write(
+    '🚀 Gemini CLI main() SANDBOX \n' + !process.env['SANDBOX'] + '\n',
+  );
   if (!process.env['SANDBOX']) {
     const memoryArgs = settings.merged.advanced?.autoConfigureMemory
       ? getNodeMemoryArgs(isDebugMode)
@@ -325,7 +332,11 @@ export async function main() {
     // TODO(jacobr): refactor loadCliConfig so there is a minimal version
     // that only initializes enough config to enable refreshAuth or find
     // another way to decouple refreshAuth from requiring a config.
-
+    process.stderr.write(
+      '🚀 Gemini CLI main() sandboxConfig \n' +
+        JSON.stringify(sandboxConfig, null, 2) +
+        '\n',
+    );
     if (sandboxConfig) {
       const partialConfig = await loadCliConfig(
         settings.merged,
@@ -399,15 +410,16 @@ export async function main() {
   // to run Gemini CLI. It is now safe to perform expensive initialization that
   // may have side effects.
   {
+    process.stderr.write('🚀 Gemini CLI main() 还继续吗 \n');
     const config = await loadCliConfig(settings.merged, sessionId, argv);
-
+    console.error(config);
     const policyEngine = config.getPolicyEngine();
     const messageBus = config.getMessageBus();
     createPolicyUpdater(policyEngine, messageBus);
 
     // Cleanup sessions after config initialization
     await cleanupExpiredSessions(config, settings.merged);
-
+    process.stderr.write('🚀 Gemini CLI main() 还继续吗 \n');
     if (config.getListExtensions()) {
       debugLogger.log('Installed extensions:');
       for (const extension of config.getExtensions()) {
@@ -415,7 +427,7 @@ export async function main() {
       }
       process.exit(0);
     }
-
+    process.stderr.write('🚀 Gemini CLI main() 还继续吗 \n');
     const wasRaw = process.stdin.isRaw;
     if (config.isInteractive() && !wasRaw && process.stdin.isTTY) {
       // Set this as early as possible to avoid spurious characters from
@@ -433,10 +445,10 @@ export async function main() {
       // Detect and enable Kitty keyboard protocol once at startup.
       await detectAndEnableKittyProtocol();
     }
-
+    process.stderr.write('🚀 Gemini CLI main() 还继续吗 \n');
     setMaxSizedBoxDebugging(isDebugMode);
     const initializationResult = await initializeApp(config, settings);
-
+    process.stderr.write('🚀 Gemini CLI main() 还继续吗 \n');
     if (
       settings.merged.security?.auth?.selectedType ===
         AuthType.LOGIN_WITH_GOOGLE &&
@@ -445,16 +457,22 @@ export async function main() {
       // Do oauth before app renders to make copying the link possible.
       await getOauthClient(settings.merged.security.auth.selectedType, config);
     }
-
+    process.stderr.write('🚀 Gemini CLI main() 还继续吗 \n');
     if (config.getExperimentalZedIntegration()) {
       return runZedIntegration(config, settings, argv);
     }
-
+    process.stderr.write('🚀 Gemini CLI main() 还继续吗 222\n');
     let input = config.getQuestion();
     const startupWarnings = [
       ...(await getStartupWarnings()),
       ...(await getUserStartupWarnings()),
     ];
+    process.stderr.write(
+      '🚀 Gemini CLI main() 还继续吗 \n input =' +
+        input +
+        'config.isInteractive()=' +
+        config.isInteractive(),
+    );
 
     // Render UI, passing necessary config values. Check that there is no command line question.
     if (config.isInteractive()) {
@@ -469,7 +487,8 @@ export async function main() {
     }
 
     await config.initialize();
-
+    process.stderr.write('🚀 Gemini CLI main() config.initialize() 完成 \n');
+    console.error(config);
     // If not a TTY, read from stdin
     // This is for cases where the user pipes input directly into the command
     if (!process.stdin.isTTY) {
@@ -518,6 +537,7 @@ export async function main() {
       hasDeprecatedPromptArg,
     });
     // Call cleanup before process.exit, which causes cleanup to not run
+    process.stderr.write('🚀 Gemini CLI main() 退出程序 \n');
     await runExitCleanup();
     process.exit(0);
   }
