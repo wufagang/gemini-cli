@@ -30,6 +30,7 @@ import type { GeminiChat } from './geminiChat.js';
 import { InvalidStreamError } from './geminiChat.js';
 import { parseThought, type ThoughtSummary } from '../utils/thoughtUtils.js';
 import { createUserContent } from '@google/genai';
+import { debugLogger } from '../utils/debugLogger.js';
 
 // Define a structure for tools passed to the server
 export interface ServerTool {
@@ -234,6 +235,14 @@ export class Turn {
     try {
       // Note: This assumes `sendMessageStream` yields events like
       // { type: StreamEventType.RETRY } or { type: StreamEventType.CHUNK, value: GenerateContentResponse }
+      debugLogger.error(
+        '我是真的和模型交互了实用的模型：' +
+          model +
+          '\n 请求 \n' +
+          JSON.stringify(req, null, 2) +
+          '\n signal \n' +
+          JSON.stringify(signal, null, 2),
+      );
       const responseStream = await this.chat.sendMessageStream(
         model,
         {

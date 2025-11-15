@@ -73,3 +73,49 @@ Action:
 
 Identify and stop the process that's listening on port 8100 or configure this application to listen on another port.
 
+2025-11-15T17:56:26.353+08:00  INFO 31412 --- [mcp-server-csdn] [main] com.jtzc.mcp.csdn.McpServerApplication   : Starting McpServerApplication v1.0 using Java 17.0.8 with PID 31412 (/Users/wufagang/project/jtzc/spring-ai-mcp-csdn/target/spring-ai-mcp-csdn-1.0.jar started by wufagang in /Users/wufagang/project/aiopen/gemini-cli)
+2025-11-15T17:56:26.359+08:00  INFO 31412 --- [mcp-server-csdn] [main] com.jtzc.mcp.csdn.McpServerApplication   : No active profile set, falling back to 1 default profile: "default"
+2025-11-15T17:56:29.758+08:00  INFO 31412 --- [mcp-server-csdn] [main] o.s.a.a.m.s.MpcServerAutoConfiguration   : Registered tools1 notification: true
+2025-11-15T17:56:29.912+08:00  INFO 31412 --- [mcp-server-csdn] [pool-4-thread-1] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=RootCapabilities[listChanged=null], sampling=null], Info: Implementation[name=claude-code, version=2.0.37]
+2025-11-15T17:56:29.949+08:00  WARN 31412 --- [mcp-server-csdn] [pool-4-thread-1] i.m.server.McpAsyncServer                : Client requested unsupported protocol version: 2025-06-18, so the server will sugggest the 2024-11-05 version instead
+2025-11-15T17:56:32.436+08:00  WARN 31412 --- [mcp-server-csdn] [main] onfigReactiveWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2025-11-15T17:56:32.477+08:00  INFO 31412 --- [mcp-server-csdn] [main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-11-15T17:56:32.511+08:00 ERROR 31412 --- [mcp-server-csdn] [main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8100 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8100 or configure this application to listen on another port.
+
+2025-11-15T18:37:05.538+08:00  INFO 41951 --- [mcp-server-csdn] [main] com.jtzc.mcp.csdn.McpServerApplication   : Starting McpServerApplication v1.0 using Java 17.0.8 with PID 41951 (/Users/wufagang/project/jtzc/spring-ai-mcp-csdn/target/spring-ai-mcp-csdn-1.0.jar started by wufagang in /Users/wufagang/project/aiopen/gemini-cli)
+2025-11-15T18:37:05.543+08:00  INFO 41951 --- [mcp-server-csdn] [main] com.jtzc.mcp.csdn.McpServerApplication   : No active profile set, falling back to 1 default profile: "default"
+2025-11-15T18:37:09.233+08:00  INFO 41951 --- [mcp-server-csdn] [main] o.s.a.a.m.s.MpcServerAutoConfiguration   : Registered tools1 notification: true
+2025-11-15T18:37:09.423+08:00  INFO 41951 --- [mcp-server-csdn] [pool-4-thread-1] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=RootCapabilities[listChanged=null], sampling=null], Info: Implementation[name=claude-code, version=2.0.37]
+2025-11-15T18:37:09.457+08:00  WARN 41951 --- [mcp-server-csdn] [pool-4-thread-1] i.m.server.McpAsyncServer                : Client requested unsupported protocol version: 2025-06-18, so the server will sugggest the 2024-11-05 version instead
+2025-11-15T18:37:11.980+08:00  WARN 41951 --- [mcp-server-csdn] [main] onfigReactiveWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2025-11-15T18:37:12.039+08:00  INFO 41951 --- [mcp-server-csdn] [main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-11-15T18:37:12.086+08:00 ERROR 41951 --- [mcp-server-csdn] [main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8100 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8100 or configure this application to listen on another port.
+

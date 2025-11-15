@@ -59,6 +59,7 @@ export class AgentRegistry {
             CodebaseInvestigatorAgent.runConfig.max_turns,
         },
       };
+      debugLogger.error('注册了几个agent ', JSON.stringify(agentDef, null, 2));
       this.registerAgent(agentDef);
     }
   }

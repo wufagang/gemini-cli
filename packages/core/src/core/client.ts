@@ -407,12 +407,26 @@ export class GeminiClient {
     turns: number = MAX_TURNS,
     isInvalidStreamRetry: boolean = false,
   ): AsyncGenerator<ServerGeminiStreamEvent, Turn> {
+    // 1. 重置循环检测器
+    debugLogger.error(
+      'this.lastPromptId = ' + this.lastPromptId + ' prompt_id = ' + prompt_id,
+    );
     if (this.lastPromptId !== prompt_id) {
       this.loopDetector.reset(prompt_id);
       this.lastPromptId = prompt_id;
       this.currentSequenceModel = null;
     }
+    debugLogger.error('this.sessionTurnCount = ' + this.sessionTurnCount);
+    debugLogger.error(
+      'this.config.getMaxSessionTurns()' + this.config.getMaxSessionTurns(),
+    );
     this.sessionTurnCount++;
+    /**
+     *  - 控制资源消耗
+        - 避免无限循环对话
+        - 管理API调用次数
+        - 提高系统稳定性
+     */
     if (
       this.config.getMaxSessionTurns() > 0 &&
       this.sessionTurnCount > this.config.getMaxSessionTurns()
@@ -429,13 +443,16 @@ export class GeminiClient {
     // Check for context window overflow
     const modelForLimitCheck = this._getEffectiveModelForCurrentTurn();
 
+    //请求token数
     const estimatedRequestTokenCount = Math.floor(
       JSON.stringify(request).length / 4,
     );
 
+    //剩余token数
     const remainingTokenCount =
       tokenLimit(modelForLimitCheck) - this.getChat().getLastPromptTokenCount();
 
+    // 达到95%
     if (estimatedRequestTokenCount > remainingTokenCount * 0.95) {
       yield {
         type: GeminiEventType.ContextWindowWillOverflow,
@@ -456,13 +473,15 @@ export class GeminiClient {
     // in the conversation history . The IDE context is not discarded; it will
     // be included in the next regular message sent to the model.
     const history = this.getHistory();
+    debugLogger.error('history \n' + JSON.stringify(history, null, 2));
     const lastMessage =
       history.length > 0 ? history[history.length - 1] : undefined;
+    //检查是否有待处理的工具调用
     const hasPendingToolCall =
       !!lastMessage &&
       lastMessage.role === 'model' &&
       (lastMessage.parts?.some((p) => 'functionCall' in p) || false);
-
+    debugLogger.error('有待处理的 function call  \n' + hasPendingToolCall);
     if (this.config.getIdeMode() && !hasPendingToolCall) {
       const { contextParts, newIdeContext } = this.getIdeContextParts(
         this.forceFullIdeContext || history.length === 0,
@@ -497,6 +516,9 @@ export class GeminiClient {
     let modelToUse: string;
 
     // Determine Model (Stickiness vs. Routing)
+    debugLogger.error(
+      '这个是啥概念，我是真的不知道    = ' + this.currentSequenceModel,
+    );
     if (this.currentSequenceModel) {
       modelToUse = this.currentSequenceModel;
     } else {
