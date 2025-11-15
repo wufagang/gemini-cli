@@ -367,7 +367,7 @@ export const useGeminiStream = (
       }
 
       let localQueryToSendToGemini: PartListUnion | null = null;
-
+      debugLogger.error('查询数据====' + query);
       if (typeof query === 'string') {
         const trimmedQuery = query.trim();
         onDebugMessage(`User query: '${trimmedQuery}'`);

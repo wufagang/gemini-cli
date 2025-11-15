@@ -1,6 +1,7 @@
 # Gemini CLI 工具系统深度技术分析
 
 ## 📋 目录
+
 1. [系统架构概览](#系统架构概览)
 2. [工具注册表核心实现](#工具注册表核心实现)
 3. [工具基类设计](#工具基类设计)
@@ -18,7 +19,8 @@
 
 ### 核心架构设计
 
-Gemini CLI的工具系统采用了分层架构和Builder模式，实现了工具定义与执行的分离，提供了强大的扩展性和安全性。
+Gemini
+CLI的工具系统采用了分层架构和Builder模式，实现了工具定义与执行的分离，提供了强大的扩展性和安全性。
 
 ```mermaid
 graph TB
@@ -55,13 +57,13 @@ graph TB
 
 ### 设计原则
 
-| 原则 | 实现方式 | 收益 |
-|------|----------|------|
+| 原则         | 实现方式                | 收益           |
+| ------------ | ----------------------- | -------------- |
 | **职责分离** | Builder与Invocation分离 | 清晰的架构边界 |
-| **类型安全** | 强类型参数验证 | 减少运行时错误 |
-| **可扩展性** | 多种工具来源支持 | 丰富的工具生态 |
-| **安全性** | 多层权限验证 | 保护系统安全 |
-| **性能优化** | 工具排序和缓存 | 提升执行效率 |
+| **类型安全** | 强类型参数验证          | 减少运行时错误 |
+| **可扩展性** | 多种工具来源支持        | 丰富的工具生态 |
+| **安全性**   | 多层权限验证            | 保护系统安全   |
+| **性能优化** | 工具排序和缓存          | 提升执行效率   |
 
 ---
 
@@ -82,11 +84,12 @@ export class ToolRegistry {
   constructor(
     config: Config,
     messageBus?: MessageBus,
-    mcpClientManager?: McpClientManager
+    mcpClientManager?: McpClientManager,
   ) {
     this.config = config;
     this.messageBus = messageBus;
-    this.mcpClientManager = mcpClientManager || new McpClientManager(this, config);
+    this.mcpClientManager =
+      mcpClientManager || new McpClientManager(this, config);
   }
 }
 ```
@@ -111,6 +114,7 @@ registerTool(tool: AnyDeclarativeTool): void {
 ```
 
 **关键特性**：
+
 - ✅ **冲突处理**: 支持工具覆盖，记录警告信息
 - ✅ **名称管理**: MCP工具使用完全限定名
 - ✅ **统一存储**: 所有工具使用统一的名称映射
@@ -152,6 +156,7 @@ sortTools(): void {
 ```
 
 **优先级顺序**：
+
 1. **内置工具** (priority: 0) - 最高优先级
 2. **发现的工具** (priority: 1) - 中等优先级
 3. **MCP工具** (priority: 2) - 按服务器名称排序
@@ -211,16 +216,16 @@ export abstract class DeclarativeTool<
 > implements ToolBuilder<TParams, TResult>
 {
   constructor(
-    readonly name: string,              // 工具名称
-    readonly displayName: string,       // 显示名称
-    readonly description: string,       // 工具描述
-    readonly kind: Kind,                // 工具类型
-    readonly parameterSchema: unknown,  // 参数Schema
-    readonly isOutputMarkdown: boolean = true,    // 输出是否为Markdown
-    readonly canUpdateOutput: boolean = false,    // 是否支持输出更新
-    readonly messageBus?: MessageBus,             // 消息总线
-    readonly extensionName?: string,              // 扩展名称
-    readonly extensionId?: string,                // 扩展ID
+    readonly name: string, // 工具名称
+    readonly displayName: string, // 显示名称
+    readonly description: string, // 工具描述
+    readonly kind: Kind, // 工具类型
+    readonly parameterSchema: unknown, // 参数Schema
+    readonly isOutputMarkdown: boolean = true, // 输出是否为Markdown
+    readonly canUpdateOutput: boolean = false, // 是否支持输出更新
+    readonly messageBus?: MessageBus, // 消息总线
+    readonly extensionName?: string, // 扩展名称
+    readonly extensionId?: string, // 扩展ID
   ) {}
 
   // 📋 生成函数声明Schema
@@ -260,7 +265,6 @@ export abstract class BaseDeclarativeTool<
   TParams extends object,
   TResult extends ToolResult,
 > extends DeclarativeTool<TParams, TResult> {
-
   // 🏗️ 构建工具执行实例
   build(params: TParams): ToolInvocation<TParams, TResult> {
     // 1️⃣ 参数验证
@@ -514,7 +518,9 @@ export class DiscoveredTool extends BaseDeclarativeTool<
     const callCommand = config.getToolCallCommand()!;
 
     // 📝 构建详细描述
-    const fullDescription = description + `
+    const fullDescription =
+      description +
+      `
 
 This tool was discovered from the project by executing the command \`${discoveryCmd}\` on project root.
 When called, this tool will execute the command \`${callCommand} ${originalName}\` on project root.
@@ -587,11 +593,14 @@ class DiscoveredToolInvocation extends BaseToolInvocation<
         error = err;
       });
 
-      child.on('close', (exitCode: number | null, killSignal: NodeJS.Signals | null) => {
-        code = exitCode;
-        signal = killSignal;
-        resolve();
-      });
+      child.on(
+        'close',
+        (exitCode: number | null, killSignal: NodeJS.Signals | null) => {
+          code = exitCode;
+          signal = killSignal;
+          resolve();
+        },
+      );
     });
 
     // ❌ 错误处理
@@ -632,15 +641,15 @@ class DiscoveredToolInvocation extends BaseToolInvocation<
 ```typescript
 // 🏷️ 工具类型枚举
 export enum Kind {
-  Read = 'read',        // 只读操作
-  Edit = 'edit',        // 编辑操作
-  Delete = 'delete',    // 删除操作
-  Move = 'move',        // 移动操作
-  Search = 'search',    // 搜索操作
-  Execute = 'execute',  // 执行操作
-  Think = 'think',      // 思考操作
-  Fetch = 'fetch',      // 获取操作
-  Other = 'other',      // 其他操作
+  Read = 'read', // 只读操作
+  Edit = 'edit', // 编辑操作
+  Delete = 'delete', // 删除操作
+  Move = 'move', // 移动操作
+  Search = 'search', // 搜索操作
+  Execute = 'execute', // 执行操作
+  Think = 'think', // 思考操作
+  Fetch = 'fetch', // 获取操作
+  Other = 'other', // 其他操作
 }
 
 // ⚠️ 有副作用的工具类型
@@ -753,9 +762,8 @@ protected getMessageBusDecision(
 
 #### 1. ReadFileTool - 文件读取工具
 
-**工具名称**: `read_file`
-**权限级别**: `Kind.Read`
-**📍 文件**: `packages/core/src/tools/read-file.ts`
+**工具名称**: `read_file` **权限级别**: `Kind.Read` **📍 文件**:
+`packages/core/src/tools/read-file.ts`
 
 ```typescript
 export class ReadFileTool extends BaseDeclarativeTool<
@@ -780,11 +788,13 @@ export class ReadFileTool extends BaseDeclarativeTool<
             type: 'string',
           },
           offset: {
-            description: "Optional: For text files, the 0-based line number to start reading from. Requires 'limit' to be set. Use for paginating through large files.",
+            description:
+              "Optional: For text files, the 0-based line number to start reading from. Requires 'limit' to be set. Use for paginating through large files.",
             type: 'number',
           },
           limit: {
-            description: "Optional: For text files, maximum number of lines to read. Use with 'offset' to paginate through large files. If omitted, reads the entire file (if feasible, up to a default limit).",
+            description:
+              "Optional: For text files, maximum number of lines to read. Use with 'offset' to paginate through large files. If omitted, reads the entire file (if feasible, up to a default limit).",
             type: 'number',
           },
         },
@@ -800,6 +810,7 @@ export class ReadFileTool extends BaseDeclarativeTool<
 ```
 
 **核心特性**:
+
 - ✅ **多格式支持**: 文本、图片(PNG/JPG/GIF/WEBP/SVG/BMP)、PDF
 - ✅ **分页读取**: 支持offset和limit参数进行大文件分页
 - ✅ **智能截断**: 自动处理大文件截断并提供分页提示
@@ -807,9 +818,8 @@ export class ReadFileTool extends BaseDeclarativeTool<
 
 #### 2. WriteFileTool - 文件写入工具
 
-**工具名称**: `write_file`
-**权限级别**: `Kind.Edit`
-**📍 文件**: `packages/core/src/tools/write-file.ts`
+**工具名称**: `write_file` **权限级别**: `Kind.Edit` **📍 文件**:
+`packages/core/src/tools/write-file.ts`
 
 ```typescript
 export class WriteFileTool
@@ -852,6 +862,7 @@ export class WriteFileTool
 ```
 
 **核心特性**:
+
 - ✅ **内容校正**: 支持`ensureCorrectEdit`机制
 - ✅ **用户修改**: 用户可以修改写入内容
 - ✅ **差异显示**: 显示内容变更的差异
@@ -859,9 +870,8 @@ export class WriteFileTool
 
 #### 3. EditTool - 精确编辑工具
 
-**工具名称**: `replace`
-**权限级别**: `Kind.Edit`
-**📍 文件**: `packages/core/src/tools/edit.ts`
+**工具名称**: `replace` **权限级别**: `Kind.Edit` **📍 文件**:
+`packages/core/src/tools/edit.ts`
 
 ```typescript
 export class EditTool
@@ -896,6 +906,7 @@ Expectation for required parameters:
 ```
 
 **核心特性**:
+
 - ✅ **精确匹配**: 要求精确的字符串匹配，包括空白字符
 - ✅ **多次替换**: 支持`expected_replacements`参数
 - ✅ **上下文验证**: 要求提供足够的上下文确保唯一性
@@ -905,9 +916,8 @@ Expectation for required parameters:
 
 #### 4. GrepTool - 文本搜索工具
 
-**工具名称**: `search_file_content`
-**权限级别**: `Kind.Search`
-**📍 文件**: `packages/core/src/tools/grep.ts`
+**工具名称**: `search_file_content` **权限级别**: `Kind.Search` **📍 文件**:
+`packages/core/src/tools/grep.ts`
 
 ```typescript
 export class GrepTool extends BaseDeclarativeTool<GrepToolParams, ToolResult> {
@@ -1015,9 +1025,8 @@ private async performGrepSearch(options: {
 
 #### 5. GlobTool - 文件匹配工具
 
-**工具名称**: `glob`
-**权限级别**: `Kind.Search`
-**📍 文件**: `packages/core/src/tools/glob.ts`
+**工具名称**: `glob` **权限级别**: `Kind.Search` **📍 文件**:
+`packages/core/src/tools/glob.ts`
 
 ```typescript
 export class GlobTool extends BaseDeclarativeTool<GlobToolParams, ToolResult> {
@@ -1039,6 +1048,7 @@ export class GlobTool extends BaseDeclarativeTool<GlobToolParams, ToolResult> {
 ```
 
 **智能文件排序**:
+
 ```typescript
 export function sortFileEntries(
   entries: GlobPath[],
@@ -1072,9 +1082,8 @@ export function sortFileEntries(
 
 #### 6. ShellTool - Shell命令执行工具
 
-**工具名称**: `run_shell_command`
-**权限级别**: `Kind.Execute`
-**📍 文件**: `packages/core/src/tools/shell.ts`
+**工具名称**: `run_shell_command` **权限级别**: `Kind.Execute` **📍 文件**:
+`packages/core/src/tools/shell.ts`
 
 ```typescript
 export class ShellTool extends BaseDeclarativeTool<
@@ -1160,9 +1169,8 @@ protected override async getConfirmationDetails(
 
 #### 7. WebFetchTool - 网页获取工具
 
-**工具名称**: `web_fetch`
-**权限级别**: `Kind.Fetch`
-**📍 文件**: `packages/core/src/tools/web-fetch.ts`
+**工具名称**: `web_fetch` **权限级别**: `Kind.Fetch` **📍 文件**:
+`packages/core/src/tools/web-fetch.ts`
 
 ```typescript
 export class WebFetchTool extends BaseDeclarativeTool<
@@ -1252,14 +1260,12 @@ async execute(signal: AbortSignal): Promise<ToolResult> {
 
 #### 8. LSTool - 目录列表工具
 
-**工具名称**: `list_directory`
-**权限级别**: `Kind.Search`
+**工具名称**: `list_directory` **权限级别**: `Kind.Search`
 
 #### 9. MemoryTool - 用户记忆工具
 
-**工具名称**: `save_memory`
-**权限级别**: `Kind.Think`
-**📍 文件**: `packages/core/src/tools/memory.ts`
+**工具名称**: `save_memory` **权限级别**: `Kind.Think` **📍 文件**:
+`packages/core/src/tools/memory.ts`
 
 ```typescript
 export class MemoryTool
@@ -1284,6 +1290,7 @@ export class MemoryTool
 ```
 
 **记忆文件管理**:
+
 ```typescript
 // 📝 计算新的记忆内容
 function computeNewContent(currentContent: string, fact: string): string {
@@ -1741,10 +1748,11 @@ export interface ModifiableDeclarativeTool<TParams extends object>
 
 // 📝 修改上下文接口
 export interface ModifyContext<ToolParams> {
-  getFilePath: (params: ToolParams) => string;                    // 获取文件路径
-  getCurrentContent: (params: ToolParams) => Promise<string>;     // 获取当前内容
-  getProposedContent: (params: ToolParams) => Promise<string>;    // 获取建议内容
-  createUpdatedParams: (                                          // 创建更新后的参数
+  getFilePath: (params: ToolParams) => string; // 获取文件路径
+  getCurrentContent: (params: ToolParams) => Promise<string>; // 获取当前内容
+  getProposedContent: (params: ToolParams) => Promise<string>; // 获取建议内容
+  createUpdatedParams: (
+    // 创建更新后的参数
     oldContent: string,
     modifiedProposedContent: string,
     originalParams: ToolParams,
@@ -1809,7 +1817,7 @@ export function isFatalToolError(errorType?: string): boolean {
   }
 
   const fatalErrors = new Set<string>([
-    ToolErrorType.NO_SPACE_LEFT,  // 磁盘空间不足
+    ToolErrorType.NO_SPACE_LEFT, // 磁盘空间不足
     // 可以添加更多致命错误类型
   ]);
 
@@ -1886,20 +1894,20 @@ const SEARCH_STRATEGIES = [
     name: 'git grep',
     condition: () => isGitRepository() && isCommandAvailable('git'),
     performance: '🥇 最快',
-    description: '利用Git索引，性能最佳'
+    description: '利用Git索引，性能最佳',
   },
   {
     name: 'system grep',
     condition: () => isCommandAvailable('grep'),
     performance: '🥈 中等',
-    description: '使用系统工具，兼容性好'
+    description: '使用系统工具，兼容性好',
   },
   {
     name: 'javascript fallback',
     condition: () => true,
     performance: '🥉 较慢',
-    description: '纯JS实现，兼容性最好'
-  }
+    description: '纯JS实现，兼容性最好',
+  },
 ];
 ```
 
@@ -1915,6 +1923,7 @@ async execute(
 ```
 
 **关键特性**：
+
 - ✅ **AbortSignal支持**: 所有工具都支持取消操作
 - ✅ **流式输出**: 实时更新输出内容
 - ✅ **配置传递**: 执行时配置参数传递
@@ -1929,18 +1938,18 @@ const CACHE_LEVELS = {
   L1: {
     name: '工具允许列表缓存',
     description: '已确认的工具命令缓存，避免重复确认',
-    ttl: 'session'
+    ttl: 'session',
   },
   L2: {
     name: 'MCP客户端状态缓存',
     description: '连接状态和发现状态跟踪',
-    ttl: 'persistent'
+    ttl: 'persistent',
   },
   L3: {
     name: '文件过滤缓存',
     description: '忽略模式的预计算和缓存',
-    ttl: '1 hour'
-  }
+    ttl: '1 hour',
+  },
 };
 ```
 
@@ -1956,14 +1965,14 @@ const CACHE_LEVELS = {
 
 Gemini CLI的工具系统是一个设计精良、功能完备的工具管理框架：
 
-| 优势 | 实现方式 | 收益 |
-|------|----------|------|
-| **🏗️ 模块化设计** | Builder与Invocation分离 | 清晰的架构边界和职责分离 |
-| **🔒 类型安全** | 强类型参数验证和结果处理 | 减少运行时错误，提高代码质量 |
-| **🔌 可扩展性** | 多种工具来源和自定义扩展 | 丰富的工具生态系统 |
-| **🛡️ 安全性** | 多层权限验证和用户确认 | 保护系统安全，防止恶意操作 |
-| **⚡ 性能优化** | 智能排序、缓存和异步执行 | 提升执行效率和用户体验 |
-| **👥 用户体验** | 丰富错误信息和交互确认 | 友好的用户交互和错误处理 |
+| 优势              | 实现方式                 | 收益                         |
+| ----------------- | ------------------------ | ---------------------------- |
+| **🏗️ 模块化设计** | Builder与Invocation分离  | 清晰的架构边界和职责分离     |
+| **🔒 类型安全**   | 强类型参数验证和结果处理 | 减少运行时错误，提高代码质量 |
+| **🔌 可扩展性**   | 多种工具来源和自定义扩展 | 丰富的工具生态系统           |
+| **🛡️ 安全性**     | 多层权限验证和用户确认   | 保护系统安全，防止恶意操作   |
+| **⚡ 性能优化**   | 智能排序、缓存和异步执行 | 提升执行效率和用户体验       |
+| **👥 用户体验**   | 丰富错误信息和交互确认   | 友好的用户交互和错误处理     |
 
 ### 🎨 架构亮点
 
@@ -1989,8 +1998,10 @@ Gemini CLI的工具系统是一个设计精良、功能完备的工具管理框�
 - **扩展优先**: 开放的工具生态支持无限扩展
 - **体验至上**: 友好的确认机制和错误处理
 
-工具系统为Gemini CLI提供了强大而灵活的工具执行能力，是整个AI助手系统的**核心基础设施**，支撑着从简单文件操作到复杂系统交互的各种AI辅助任务。
+工具系统为Gemini
+CLI提供了强大而灵活的工具执行能力，是整个AI助手系统的**核心基础设施**，支撑着从简单文件操作到复杂系统交互的各种AI辅助任务。
 
 ---
 
-*本文档基于Gemini CLI项目源码的深度分析，详细展现了工具系统的设计思想、实现细节和架构特色。*
+_本文档基于Gemini
+CLI项目源码的深度分析，详细展现了工具系统的设计思想、实现细节和架构特色。_

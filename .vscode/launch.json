@@ -18,6 +18,36 @@
       }
     },
     {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug CLI from Start",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "debug"],
+      "skipFiles": ["<node_internals>/**"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopOnEntry": false,
+      "env": {
+        "GEMINI_SANDBOX": "false",
+        "DEBUG": "1"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug CLI with Args",
+      "program": "${workspaceFolder}/scripts/start.js",
+      "args": ["--help"],
+      "skipFiles": ["<node_internals>/**"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {
+        "GEMINI_SANDBOX": "false",
+        "DEBUG": "1"
+      },
+      "preLaunchTask": "npm: build"
+    },
+    {
       "name": "Launch Companion VS Code Extension",
       "type": "extensionHost",
       "request": "launch",
