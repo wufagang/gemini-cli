@@ -500,13 +500,18 @@ export class GeminiClient {
 
     const controller = new AbortController();
     const linkedSignal = AbortSignal.any([signal, controller.signal]);
-
+    /**
+     *  通过unproductive_state_confidence 这个变量进行评分，如果不信用度>95% 这个地方就终止循环
+     */
     const loopDetected = await this.loopDetector.turnStarted(signal);
     if (loopDetected) {
       yield { type: GeminiEventType.LoopDetected };
       return turn;
     }
 
+    /**
+     * 模型选择这是一个策略模式进行选择使用哪个模型
+     */
     const routingContext: RoutingContext = {
       history: this.getChat().getHistory(/*curated=*/ true),
       request,
@@ -516,9 +521,6 @@ export class GeminiClient {
     let modelToUse: string;
 
     // Determine Model (Stickiness vs. Routing)
-    debugLogger.error(
-      '这个是啥概念，我是真的不知道    = ' + this.currentSequenceModel,
-    );
     if (this.currentSequenceModel) {
       modelToUse = this.currentSequenceModel;
     } else {
@@ -529,8 +531,24 @@ export class GeminiClient {
       this.currentSequenceModel = modelToUse;
     }
 
+    /**
+     * 开启一次对话，管理单个对话轮次的核心组件，
+     * 负责处理与 Gemini API 的单次交互循环，包括流式响应处理、工具调用管理、事件分发等关键功能
+     */
+
     const resultStream = turn.run(modelToUse, request, linkedSignal);
     for await (const event of resultStream) {
+      /**
+       * loopDetector 检查循环是否要终止
+       * 如果工具循环调用5次要终止
+       *  * 判断内容块是否表明存在循环模
+       * 循环检测逻辑：
+       * 1. 检查我们之前是否见过这个哈希值（新的内容块会被存储以供未来比较）
+       * 2. 验证实际内容是否匹配，以防止哈希碰撞
+       * 3. 跟踪这个内容块出现的所有位置
+       * 4. 当同一个内容块在较小的平均距离内（≤ 5倍内容块大小）出现 CONTENT_LOOP_THRESHOLD 次时，
+       *    检测到循环
+       */
       if (this.loopDetector.addAndCheck(event)) {
         yield { type: GeminiEventType.LoopDetected };
         controller.abort();
@@ -569,6 +587,7 @@ export class GeminiClient {
         return turn;
       }
     }
+
     if (!turn.pendingToolCalls.length && signal && !signal.aborted) {
       // Check if next speaker check is needed
       if (this.config.getQuotaErrorOccurred()) {

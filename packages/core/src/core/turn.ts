@@ -241,7 +241,8 @@ export class Turn {
           '\n 请求 \n' +
           JSON.stringify(req, null, 2) +
           '\n signal \n' +
-          JSON.stringify(signal, null, 2),
+          JSON.stringify(signal, null, 2) +
+          '\n',
       );
       const responseStream = await this.chat.sendMessageStream(
         model,
