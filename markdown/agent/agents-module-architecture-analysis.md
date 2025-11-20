@@ -239,56 +239,115 @@ classDiagram
 ## 类型依赖关系图
 
 ```mermaid
-graph TD
-    %% 核心类型流
-    AgentInputs["AgentInputs<br/>Record string, unknown"]
+flowchart TD
+    %% 核心类型
+    AI[AgentInputs<br/>Record string unknown]
+    AD[AgentDefinition TOutput]
+    OO[OutputObject]
+    SAE[SubagentActivityEvent]
+    ATM[AgentTerminateMode]
 
-    %% 配置类型流
-    InputConfig[InputConfig] --> SchemaUtils[Schema Utils]
-    SchemaUtils --> JsonSchema[JSON Schema]
-    JsonSchema --> SubagentToolWrapper
+    %% 配置类型
+    IC[InputConfig]
+    PC[PromptConfig]
+    MC[ModelConfig]
+    RC[RunConfig]
+    TC[ToolConfig]
+    OC[OutputConfig TOutput]
 
-    %% 代理定义流
-    AgentDefinition["AgentDefinition TOutput"] --> AgentRegistry
-    AgentDefinition --> AgentExecutor["AgentExecutor TOutput"]
-    AgentDefinition --> SubagentInvocation["SubagentInvocation TOutput"]
-    AgentDefinition --> SubagentToolWrapper
+    %% 核心类
+    AR[AgentRegistry]
+    AE[AgentExecutor TOutput]
+    SI[SubagentInvocation TOutput]
+    STW[SubagentToolWrapper]
 
-    %% 执行流
-    AgentInputs --> AgentExecutor
-    AgentExecutor --> OutputObject[OutputObject]
-    AgentExecutor --> SubagentActivityEvent[SubagentActivityEvent]
+    %% 工具函数
+    SU[SchemaUtils]
+    TU[TemplateUtils]
+    JS[JsonSchema]
 
-    %% 工具系统集成流
-    SubagentInvocation --> BaseToolInvocation["BaseToolInvocation AgentInputs, ToolResult"]
-    SubagentToolWrapper --> BaseDeclarativeTool["BaseDeclarativeTool AgentInputs, ToolResult"]
-
-    %% 终止状态流
-    AgentTerminateMode[AgentTerminateMode] --> OutputObject
-    AgentTerminateMode --> AgentExecutor
-
-    %% 实际实现
-    CodebaseInvestigatorAgent[CodebaseInvestigatorAgent] -.-> AgentDefinition
+    %% 外部基类
+    BTI[BaseToolInvocation]
+    BDT[BaseDeclarativeTool]
 
     %% 外部依赖
-    Config[Config] --> AgentRegistry
-    Config --> AgentExecutor
-    ToolRegistry[ToolRegistry] --> AgentExecutor
-    GeminiChat[GeminiChat] --> AgentExecutor
+    CFG[Config]
+    TR[ToolRegistry]
+    GC[GeminiChat]
+
+    %% 具体实现
+    CIA[CodebaseInvestigatorAgent]
+
+    %% 关系定义
+    AD --> PC
+    AD --> MC
+    AD --> RC
+    AD --> TC
+    AD --> OC
+    AD --> IC
+
+    AD --> AR
+    AD --> AE
+    AD --> SI
+    AD --> STW
+
+    AI --> AE
+    AE --> OO
+    AE --> SAE
+    AE --> TU
+
+    IC --> SU
+    SU --> JS
+    JS --> STW
+
+    SI --> BTI
+    STW --> BDT
+
+    ATM --> OO
+    ATM --> AE
+
+    CFG --> AR
+    CFG --> AE
+    TR --> AE
+    GC --> AE
+
+    CIA -.-> AD
 
     %% 样式定义
-    classDef interface fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef class fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef utility fill:#f1f8e9,stroke:#33691e,stroke-width:2px
-    classDef external fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef implementation fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef interfaceStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef classStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef utilityStyle fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    classDef externalStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef implementationStyle fill:#fce4ec,stroke:#880e4f,stroke-width:2px
 
     %% 应用样式
-    class AgentDefinition,InputConfig,OutputObject,SubagentActivityEvent interface
-    class AgentRegistry,AgentExecutor,SubagentInvocation,SubagentToolWrapper class
-    class SchemaUtils,JsonSchema utility
-    class Config,ToolRegistry,GeminiChat,BaseToolInvocation,BaseDeclarativeTool external
-    class CodebaseInvestigatorAgent implementation
+    AI:::interfaceStyle
+    AD:::interfaceStyle
+    OO:::interfaceStyle
+    SAE:::interfaceStyle
+    IC:::interfaceStyle
+    PC:::interfaceStyle
+    MC:::interfaceStyle
+    RC:::interfaceStyle
+    TC:::interfaceStyle
+    OC:::interfaceStyle
+
+    AR:::classStyle
+    AE:::classStyle
+    SI:::classStyle
+    STW:::classStyle
+
+    SU:::utilityStyle
+    TU:::utilityStyle
+    JS:::utilityStyle
+
+    CFG:::externalStyle
+    TR:::externalStyle
+    GC:::externalStyle
+    BTI:::externalStyle
+    BDT:::externalStyle
+
+    CIA:::implementationStyle
 ```
 
 ## 核心架构组件
@@ -713,7 +772,7 @@ export function templateString(template: string, inputs: AgentInputs): string {
 - 新代理通过实现 `AgentDefinition` 接口添加
 - 工具系统支持插件式扩展
 
-#### 里氏替换原则 (Liskov Substitution Principle)
+#### 里氏替换原则 (Liskov<!-- cspell:ignore Liskov --> Substitution Principle)
 
 - 所有代理都可以通过统一接口调用
 - 子类型可以替换父类型而不破坏程序
