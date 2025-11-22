@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>循环检测算法演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #4fc3f7;
+            margin-bottom: 10px;
+        }
+
+        .demo-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-section {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .input-section h3 {
+            color: #81c784;
+            margin-bottom: 15px;
+        }
+
+        #contentInput {
+            width: 100%;
+            height: 200px;
+            background: #1e1e1e;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #e0e0e0;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .controls {
+            margin: 15px 0;
+        }
+
+        button {
+            background: #4fc3f7;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #29b6f6;
+        }
+
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        .status-section {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #1e1e1e;
+            border-radius: 4px;
+        }
+
+        .status-label {
+            color: #90caf9;
+        }
+
+        .status-value {
+            font-weight: bold;
+        }
+
+        .status-true { color: #81c784; }
+        .status-false { color: #e57373; }
+        .status-normal { color: #fff3e0; }
+
+        .visualization {
+            grid-column: 1 / -1;
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .viz-header {
+            color: #ffb74d;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .content-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .content-chunk {
+            background: #1e1e1e;
+            border-radius: 6px;
+            padding: 15px;
+            border-left: 4px solid #4fc3f7;
+            position: relative;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .content-chunk.detected {
+            border-left-color: #ff9800;
+            background: #2d2416;
+        }
+
+        .content-chunk.reset {
+            border-left-color: #f44336;
+            background: #2d1616;
+            animation: pulse 1s ease-in-out;
+        }
+
+        .content-chunk.loop-detected {
+            border-left-color: #e91e63;
+            background: #2d162a;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .chunk-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .chunk-index {
+            font-size: 12px;
+            color: #90caf9;
+            background: #1a237e;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .chunk-type {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .type-normal { background: #2e7d32; color: white; }
+        .type-code { background: #ff6f00; color: white; }
+        .type-table { background: #7b1fa2; color: white; }
+        .type-list { background: #c62828; color: white; }
+        .type-heading { background: #1565c0; color: white; }
+        .type-blockquote { background: #5d4037; color: white; }
+        .type-divider { background: #424242; color: white; }
+
+        .chunk-content {
+            font-size: 14px;
+            white-space: pre-wrap;
+            color: #e0e0e0;
+        }
+
+        .chunk-analysis {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #90caf9;
+            border-top: 1px solid #555;
+            padding-top: 8px;
+        }
+
+        .history-display {
+            background: #1e1e1e;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-display h4 {
+            color: #ffb74d;
+            margin-bottom: 10px;
+        }
+
+        .history-content {
+            font-size: 12px;
+            color: #b0bec5;
+            white-space: pre-wrap;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #1e1e1e;
+            border-radius: 4px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+        }
+
+        .examples-section {
+            margin-top: 20px;
+        }
+
+        .example-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .example-btn {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .example-btn:hover {
+            background: #388e3c;
+            transform: translateY(-1px);
+        }
+
+        .processing {
+            animation: processing 2s ease-in-out;
+        }
+
+        @keyframes processing {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); background-color: #ff9800; }
+            100% { transform: scale(1); }
+        }
+
+        .step-indicator {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #e91e63;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Gemini CLI 循环检测算法演示</h1>
+            <p>实时可视化内容重复检测的工作原理</p>
+        </div>
+
+        <div class="demo-area">
+            <div class="input-section">
+                <h3>📝 输入内容</h3>
+                <textarea id="contentInput" placeholder="输入要检测的内容...
+
+尝试输入一些内容类型：
+- 普通文本
+- ```代码块```
+- | 表格 | 内容 |
+- * 列表项
+- # 标题
+- > 引用
+- ========="></textarea>
+
+                <div class="controls">
+                    <button onclick="processContent()">🔍 检测内容</button>
+                    <button onclick="clearDemo()">🗑️ 清空演示</button>
+                </div>
+
+                <div class="examples-section">
+                    <h4 style="color: #ffb74d; margin: 20px 0 10px 0;">📚 测试案例</h4>
+                    <div class="example-buttons">
+                        <button onclick="runExample('normal')" class="example-btn">普通文本</button>
+                        <button onclick="runExample('codeblock')" class="example-btn">代码块</button>
+                        <button onclick="runExample('table')" class="example-btn">表格</button>
+                        <button onclick="runExample('list')" class="example-btn">列表</button>
+                        <button onclick="runExample('mixed')" class="example-btn">混合内容</button>
+                        <button onclick="runExample('loop')" class="example-btn">循环检测</button>
+                        <button onclick="runExample('complex')" class="example-btn">复杂场景</button>
+                        <button onclick="runExample('realworld')" class="example-btn">真实案例</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-section">
+                <h3>📊 检测状态</h3>
+                <div class="status-item">
+                    <span class="status-label">代码块状态:</span>
+                    <span id="codeBlockStatus" class="status-value status-false">关闭</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">历史长度:</span>
+                    <span id="historyLength" class="status-value status-normal">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">检测到的类型:</span>
+                    <span id="detectedType" class="status-value status-normal">无</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">循环检测:</span>
+                    <span id="loopStatus" class="status-value status-false">无循环</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">跟踪重置:</span>
+                    <span id="resetStatus" class="status-value status-false">正常</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="visualization">
+            <h3 class="viz-header">🎬 处理过程可视化</h3>
+            <div id="contentFlow" class="content-flow"></div>
+
+            <div class="history-display">
+                <h4>📚 内容历史记录</h4>
+                <div id="historyContent" class="history-content">空</div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4fc3f7;"></div>
+                    <span>普通内容</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff9800;"></div>
+                    <span>特殊内容类型</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f44336;"></div>
+                    <span>触发重置</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e91e63;"></div>
+                    <span>检测到循环</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟循环检测服务状态
+        let streamContentHistory = '';
+        let inCodeBlock = false;
+        let chunkIndex = 0;
+        let processedChunks = [];
+        let currentStepIndex = 0;
+
+        // 测试案例数据
+        const testExamples = {
+            normal: {
+                name: "普通文本处理",
+                description: "演示普通文本如何被处理和累积",
+                steps: [
+                    "今天天气很好，阳光明媚。",
+                    "我正在学习循环检测算法。",
+                    "这个算法很有趣，能够识别重复内容。"
+                ]
+            },
+            codeblock: {
+                name: "代码块处理",
+                description: "演示代码块如何触发重置机制",
+                steps: [
+                    "让我们先输入一些普通文本。",
+                    "```javascript\nfunction hello() {\n  console.log('Hello World');\n}\n```",
+                    "代码块结束后，历史已被重置。",
+                    "现在这是新的普通文本内容。"
+                ]
+            },
+            table: {
+                name: "表格内容处理",
+                description: "演示表格如何触发重置",
+                steps: [
+                    "这是表格前的文本内容。",
+                    "| 姓名 | 年龄 | 职业 |\n|------|------|------|\n| 张三 | 25 | 工程师 |",
+                    "表格处理完成，追踪已重置。"
+                ]
+            },
+            list: {
+                name: "列表内容处理",
+                description: "演示各种列表格式的处理",
+                steps: [
+                    "准备展示列表内容：",
+                    "* 第一个列表项\n* 第二个列表项\n* 第三个列表项",
+                    "现在是有序列表：",
+                    "1. 首先做这个\n2. 然后做那个\n3. 最后完成"
+                ]
+            },
+            mixed: {
+                name: "混合内容处理",
+                description: "演示各种内容类型混合时的处理",
+                steps: [
+                    "# 这是一个标题",
+                    "普通文本段落内容。",
+                    "> 这是一个引用块\n> 包含多行内容",
+                    "```python\nprint('代码块')\n```",
+                    "===================",
+                    "分隔符后的新内容。"
+                ]
+            },
+            loop: {
+                name: "循环检测演示",
+                description: "演示如何检测重复内容模式",
+                steps: [
+                    "开始输入一些内容。",
+                    "重复内容重复内容重复内容。",
+                    "重复内容重复内容重复内容重复内容。",
+                    "这应该会触发循环检测！"
+                ]
+            },
+            complex: {
+                name: "复杂场景处理",
+                description: "演示复杂交互场景的处理逻辑",
+                steps: [
+                    "开始一个复杂的对话场景。",
+                    "```bash\nls -la\n```",
+                    "命令执行结果如下：",
+                    "| 文件名 | 大小 | 权限 |\n|--------|------|------|",
+                    "继续处理其他内容。",
+                    "再次输入相同的内容进行测试。",
+                    "再次输入相同的内容进行测试。",
+                    "这应该触发循环检测。"
+                ]
+            },
+            realworld: {
+                name: "真实世界案例",
+                description: "模拟Gemini CLI的真实使用场景",
+                steps: [
+                    "用户: 请帮我分析这个函数",
+                    "```typescript\nfunction processData(input: string): boolean {\n  return input.length > 0;\n}\n```",
+                    "AI: 这个函数很简单，它检查输入字符串是否为空。",
+                    "用户: 能优化一下吗？",
+                    "```typescript\nfunction processData(input: string): boolean {\n  return Boolean(input?.trim());\n}\n```",
+                    "AI: 优化后的版本更安全，处理了空值和空白字符。"
+                ]
+            }
+        };
+
+        // 内容类型检测函数
+        function detectContentType(content) {
+            const numFences = (content.match(/```/g) ?? []).length;
+            const hasTable = /(^|\n)\s*(\|.*\||[|+-]{3,})/.test(content);
+            const hasListItem = /(^|\n)\s*[*-+]\s/.test(content) || /(^|\n)\s*\d+\.\s/.test(content);
+            const hasHeading = /(^|\n)#+\s/.test(content);
+            const hasBlockquote = /(^|\n)>\s/.test(content);
+            const isDivider = /^[+-_=*\u2500-\u257F]+$/.test(content);
+
+            if (numFences) return { type: 'code', name: '代码块', shouldReset: true };
+            if (hasTable) return { type: 'table', name: '表格', shouldReset: true };
+            if (hasListItem) return { type: 'list', name: '列表', shouldReset: true };
+            if (hasHeading) return { type: 'heading', name: '标题', shouldReset: true };
+            if (hasBlockquote) return { type: 'blockquote', name: '引用', shouldReset: true };
+            if (isDivider) return { type: 'divider', name: '分隔符', shouldReset: true };
+
+            return { type: 'normal', name: '普通文本', shouldReset: false };
+        }
+
+        // 检查是否有循环
+        function checkForLoop(content) {
+            // 更精确的循环检测逻辑
+            const sentences = content.split(/[.!?。！？]\s*/).filter(s => s.trim().length > 5);
+            const sentenceCounts = {};
+
+            for (const sentence of sentences) {
+                const normalized = sentence.trim().toLowerCase();
+                sentenceCounts[normalized] = (sentenceCounts[normalized] || 0) + 1;
+            }
+
+            // 如果有句子重复超过2次，认为是循环
+            const maxRepeats = Math.max(...Object.values(sentenceCounts));
+            return maxRepeats >= 3;
+        }
+
+        // 更新状态显示
+        function updateStatus(detectedType, hasLoop, shouldReset) {
+            document.getElementById('codeBlockStatus').textContent = inCodeBlock ? '开启' : '关闭';
+            document.getElementById('codeBlockStatus').className = `status-value ${inCodeBlock ? 'status-true' : 'status-false'}`;
+
+            document.getElementById('historyLength').textContent = streamContentHistory.length;
+
+            document.getElementById('detectedType').textContent = detectedType.name;
+            document.getElementById('detectedType').className = `status-value ${detectedType.shouldReset ? 'status-true' : 'status-normal'}`;
+
+            document.getElementById('loopStatus').textContent = hasLoop ? '检测到循环' : '无循环';
+            document.getElementById('loopStatus').className = `status-value ${hasLoop ? 'status-true' : 'status-false'}`;
+
+            document.getElementById('resetStatus').textContent = shouldReset ? '已重置' : '正常';
+            document.getElementById('resetStatus').className = `status-value ${shouldReset ? 'status-true' : 'status-false'}`;
+        }
+
+        // 添加内容块到可视化
+        function addContentChunk(content, detectedType, hasLoop, shouldReset, stepNum = null) {
+            const chunk = document.createElement('div');
+            chunk.className = 'content-chunk processing';
+
+            if (shouldReset) {
+                chunk.classList.add('reset');
+            } else if (hasLoop) {
+                chunk.classList.add('loop-detected');
+            } else if (detectedType.type !== 'normal') {
+                chunk.classList.add('detected');
+            }
+
+            const analysis = [];
+            if (detectedType.type !== 'normal') analysis.push(`检测到: ${detectedType.name}`);
+            if (shouldReset) analysis.push('🔄 触发重置');
+            if (hasLoop) analysis.push('⚠️ 发现循环模式');
+            if (inCodeBlock) analysis.push('📝 在代码块内');
+
+            const stepIndicator = stepNum ? `<div class="step-indicator">${stepNum}</div>` : '';
+
+            chunk.innerHTML = `
+                ${stepIndicator}
+                <div class="chunk-header">
+                    <span class="chunk-index">#${chunkIndex}</span>
+                    <span class="chunk-type type-${detectedType.type}">${detectedType.name}</span>
+                </div>
+                <div class="chunk-content">${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                ${analysis.length > 0 ? `<div class="chunk-analysis">📋 ${analysis.join(' • ')}</div>` : ''}
+            `;
+
+            const flow = document.getElementById('contentFlow');
+            flow.appendChild(chunk);
+
+            // 滚动到最新内容
+            setTimeout(() => {
+                chunk.scrollIntoView({ behavior: 'smooth' });
+                chunk.classList.remove('processing');
+            }, 100);
+
+            chunkIndex++;
+        }
+
+        // 更新历史记录显示
+        function updateHistoryDisplay() {
+            const historyElement = document.getElementById('historyContent');
+            if (streamContentHistory) {
+                const truncated = streamContentHistory.length > 500
+                    ? streamContentHistory.substring(0, 500) + '\n...(截断)'
+                    : streamContentHistory;
+                historyElement.textContent = truncated;
+            } else {
+                historyElement.textContent = '空';
+            }
+        }
+
+        // 处理内容
+        function processContent() {
+            const input = document.getElementById('contentInput');
+            const content = input.value.trim();
+
+            if (!content) return;
+
+            // 检测内容类型
+            const detectedType = detectContentType(content);
+
+            // 更新代码块状态
+            const numFences = (content.match(/```/g) ?? []).length;
+            const wasInCodeBlock = inCodeBlock;
+            if (numFences > 0) {
+                inCodeBlock = numFences % 2 === 0 ? inCodeBlock : !inCodeBlock;
+            }
+
+            // 决定是否重置
+            const shouldReset = detectedType.shouldReset;
+            if (shouldReset) {
+                streamContentHistory = '';
+                showResetAnimation();
+            }
+
+            // 如果在代码块内或是分隔符，跳过循环检测
+            const shouldSkipLoop = wasInCodeBlock || inCodeBlock || detectedType.type === 'divider';
+            let hasLoop = false;
+
+            if (!shouldSkipLoop) {
+                streamContentHistory += content + ' ';
+                hasLoop = checkForLoop(streamContentHistory);
+            }
+
+            // 更新显示
+            updateStatus(detectedType, hasLoop, shouldReset);
+            addContentChunk(content, detectedType, hasLoop, shouldReset);
+            updateHistoryDisplay();
+
+            // 清空输入
+            input.value = '';
+        }
+
+        // 显示重置动画
+        function showResetAnimation() {
+            const flow = document.getElementById('contentFlow');
+            const resetIndicator = document.createElement('div');
+            resetIndicator.className = 'content-chunk reset';
+            resetIndicator.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #f44336; font-weight: bold;">
+                    🔄 历史记录已重置
+                </div>
+            `;
+            flow.appendChild(resetIndicator);
+
+            setTimeout(() => {
+                resetIndicator.remove();
+            }, 2000);
+        }
+
+        // 运行示例
+        async function runExample(exampleKey) {
+            const example = testExamples[exampleKey];
+            if (!example) return;
+
+            // 清空当前状态
+            clearDemo();
+
+            // 显示示例信息
+            const flow = document.getElementById('contentFlow');
+            const infoChunk = document.createElement('div');
+            infoChunk.className = 'content-chunk';
+            infoChunk.style.background = '#1a237e';
+            infoChunk.innerHTML = `
+                <div style="text-align: center; color: #fff;">
+                    <h4>🎬 ${example.name}</h4>
+                    <p style="font-size: 12px; margin-top: 8px; color: #90caf9;">${example.description}</p>
+                </div>
+            `;
+            flow.appendChild(infoChunk);
+
+            // 逐步执行示例
+            currentStepIndex = 0;
+            for (let i = 0; i < example.steps.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                const step = example.steps[i];
+                document.getElementById('contentInput').value = step;
+
+                // 高亮当前步骤
+                document.getElementById('contentInput').classList.add('processing');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                document.getElementById('contentInput').classList.remove('processing');
+
+                processContentWithStep(i + 1);
+            }
+        }
+
+        // 带步骤编号的内容处理
+        function processContentWithStep(stepNum) {
+            const input = document.getElementById('contentInput');
+            const content = input.value.trim();
+
+            if (!content) return;
+
+            // 检测内容类型
+            const detectedType = detectContentType(content);
+
+            // 更新代码块状态
+            const numFences = (content.match(/```/g) ?? []).length;
+            const wasInCodeBlock = inCodeBlock;
+            if (numFences > 0) {
+                inCodeBlock = numFences % 2 === 0 ? inCodeBlock : !inCodeBlock;
+            }
+
+            // 决定是否重置
+            const shouldReset = detectedType.shouldReset;
+            if (shouldReset) {
+                streamContentHistory = '';
+            }
+
+            // 如果在代码块内或是分隔符，跳过循环检测
+            const shouldSkipLoop = wasInCodeBlock || inCodeBlock || detectedType.type === 'divider';
+            let hasLoop = false;
+
+            if (!shouldSkipLoop) {
+                streamContentHistory += content + ' ';
+                hasLoop = checkForLoop(streamContentHistory);
+            }
+
+            // 更新显示
+            updateStatus(detectedType, hasLoop, shouldReset);
+            addContentChunk(content, detectedType, hasLoop, shouldReset, stepNum);
+            updateHistoryDisplay();
+
+            // 清空输入
+            input.value = '';
+        }
+
+        // 清空演示
+        function clearDemo() {
+            streamContentHistory = '';
+            inCodeBlock = false;
+            chunkIndex = 0;
+            processedChunks = [];
+            currentStepIndex = 0;
+
+            document.getElementById('contentInput').value = '';
+            document.getElementById('contentFlow').innerHTML = '';
+
+            updateStatus(
+                { type: 'normal', name: '无', shouldReset: false },
+                false,
+                false
+            );
+            updateHistoryDisplay();
+        }
+
+        // 允许Enter键触发处理
+        document.getElementById('contentInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                processContent();
+            }
+        });
+
+        // 初始化
+        updateStatus(
+            { type: 'normal', name: '无', shouldReset: false },
+            false,
+            false
+        );
+    </script>
+</body>
+</html>

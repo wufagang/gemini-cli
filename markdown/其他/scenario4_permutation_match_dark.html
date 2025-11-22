@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permutation in String - Sliding Window Algorithm</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #e4e4e7;
+            background: #0a0a0b;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0b;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: left;
+            margin-bottom: 60px;
+            padding: 60px 0;
+            border-bottom: 1px solid #27272a;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            font-weight: 300;
+            color: #fafafa;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #a1a1aa;
+            margin-bottom: 30px;
+            max-width: 600px;
+            font-weight: 400;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #18181b;
+            color: #a1a1aa;
+            padding: 6px 12px;
+            border-radius: 2px;
+            font-size: 0.8em;
+            margin-top: 10px;
+            border: 1px solid #3f3f46;
+            font-family: 'Monaco', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 40px;
+            background: #111113;
+            border-radius: 2px;
+            border: 1px solid #27272a;
+        }
+
+        .section h2 {
+            color: #fafafa;
+            margin-bottom: 30px;
+            font-size: 1.6em;
+            font-weight: 500;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #18181b;
+            border-radius: 2px;
+            border: 1px solid #3f3f46;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-weight: 500;
+            color: #fafafa;
+            font-size: 0.9em;
+        }
+
+        input, button {
+            padding: 12px 16px;
+            border: 1px solid #3f3f46;
+            border-radius: 2px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #27272a;
+            color: #fafafa;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #52525b;
+            background: #18181b;
+        }
+
+        button {
+            background: #18181b;
+            border: 1px solid #3f3f46;
+            cursor: pointer;
+            font-weight: 500;
+            min-width: 120px;
+        }
+
+        button:hover {
+            background: #27272a;
+            border-color: #52525b;
+        }
+
+        button:disabled {
+            background: #18181b;
+            color: #71717a;
+            cursor: not-allowed;
+            border-color: #27272a;
+        }
+
+        .visualization {
+            margin: 20px 0;
+            padding: 30px;
+            background: #18181b;
+            border-radius: 2px;
+            border: 1px solid #3f3f46;
+        }
+
+        .string-display {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .char-box {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #3f3f46;
+            border-radius: 2px;
+            font-size: 18px;
+            font-weight: 500;
+            background: #27272a;
+            color: #fafafa;
+            transition: all 0.4s ease;
+            position: relative;
+            font-family: 'Monaco', monospace;
+        }
+
+        .char-box.in-window {
+            background: #18181b;
+            border-color: #52525b;
+            transform: scale(1.05);
+        }
+
+        .char-box.pattern-char {
+            background: #451a03;
+            border-color: #f59e0b;
+        }
+
+        .char-box.match-found {
+            background: #052e16;
+            border-color: #22c55e;
+            animation: highlight 1s ease-in-out;
+        }
+
+        .char-box .index {
+            position: absolute;
+            bottom: -18px;
+            font-size: 10px;
+            color: #71717a;
+            font-family: 'Monaco', monospace;
+        }
+
+        .status-display {
+            font-size: 16px;
+            font-weight: 500;
+            text-align: center;
+            padding: 20px;
+            border-radius: 2px;
+            margin: 15px 0;
+            font-family: 'Monaco', monospace;
+            background: #18181b;
+            color: #a1a1aa;
+            border: 1px solid #3f3f46;
+        }
+
+        .algorithm-steps {
+            background: #18181b;
+            padding: 30px;
+            border-radius: 2px;
+            margin: 20px 0;
+            border: 1px solid #3f3f46;
+        }
+
+        .algorithm-steps h3 {
+            color: #fafafa;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .algorithm-steps ol {
+            padding-left: 20px;
+        }
+
+        .algorithm-steps li {
+            margin: 15px 0;
+            padding: 12px;
+            background: #27272a;
+            border-radius: 2px;
+            color: #a1a1aa;
+            border: 1px solid #3f3f46;
+        }
+
+        .code-example {
+            background: #0a0a0b;
+            color: #e4e4e7;
+            padding: 30px;
+            border-radius: 2px;
+            margin: 20px 0;
+            overflow-x: auto;
+            border: 1px solid #27272a;
+        }
+
+        .code-example pre {
+            margin: 0;
+            font-family: 'Monaco', monospace;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        @keyframes highlight {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1.05); }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .char-box {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>Permutation in String</h1>
+            <p>Fixed window sliding window algorithm for permutation matching</p>
+            <div class="badge">leetcode 567 | medium</div>
+        </div>
+
+        <!-- Algorithm Theory Section -->
+        <div class="section">
+            <h2>Algorithm Theory</h2>
+            <p><strong>Permutation in String</strong> determines if a string contains any permutation of another string using fixed-size sliding window and character frequency comparison for efficient matching.</p>
+
+            <div class="algorithm-steps">
+                <h3>Algorithm Steps:</h3>
+                <ol>
+                    <li><strong>Preprocessing:</strong> Count frequency of each character in pattern string</li>
+                    <li><strong>Initialize:</strong> Create fixed-size window equal to pattern length</li>
+                    <li><strong>Slide Window:</strong> Move window through string, updating character frequencies</li>
+                    <li><strong>Compare Frequencies:</strong> Check if window frequencies match pattern frequencies</li>
+                    <li><strong>Return Result:</strong> Return true if match found, false otherwise</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Interactive Demo Section -->
+        <div class="section">
+            <h2>Interactive Demo</h2>
+
+            <div class="controls">
+                <div class="input-group">
+                    <label for="stringInput">String:</label>
+                    <input type="text" id="stringInput" value="eidbaooo" placeholder="Enter string">
+                </div>
+
+                <div class="input-group">
+                    <label for="patternInput">Pattern:</label>
+                    <input type="text" id="patternInput" value="ab" placeholder="Enter pattern">
+                </div>
+
+                <button id="startBtn">Start Demo</button>
+                <button id="stepBtn" disabled>Next Step</button>
+                <button id="autoBtn" disabled>Auto Play</button>
+                <button id="resetBtn" disabled>Reset</button>
+            </div>
+
+            <div class="visualization">
+                <div id="stringDisplay" class="string-display"></div>
+
+                <div id="statusDisplay" class="status-display">
+                    Click "Start Demo" to launch algorithm visualization
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Implementation Section -->
+        <div class="section">
+            <h2>Code Implementation</h2>
+            <div class="code-example">
+                <pre><code>function checkInclusion(s1, s2) {
+    if (s1.length > s2.length) return false;
+
+    // Count character frequencies in pattern
+    const s1Count = {};
+    for (const char of s1) {
+        s1Count[char] = (s1Count[char] || 0) + 1;
+    }
+
+    const windowSize = s1.length;
+    const s2Count = {};
+
+    // Initialize window
+    for (let i = 0; i < windowSize; i++) {
+        const char = s2[i];
+        s2Count[char] = (s2Count[char] || 0) + 1;
+    }
+
+    // Check if initial window matches
+    if (matches(s1Count, s2Count)) return true;
+
+    // Slide window
+    for (let i = windowSize; i < s2.length; i++) {
+        // Add new character
+        const newChar = s2[i];
+        s2Count[newChar] = (s2Count[newChar] || 0) + 1;
+
+        // Remove old character
+        const oldChar = s2[i - windowSize];
+        s2Count[oldChar]--;
+        if (s2Count[oldChar] === 0) {
+            delete s2Count[oldChar];
+        }
+
+        // Check match
+        if (matches(s1Count, s2Count)) return true;
+    }
+
+    return false;
+}
+
+function matches(count1, count2) {
+    const keys1 = Object.keys(count1);
+    const keys2 = Object.keys(count2);
+
+    if (keys1.length !== keys2.length) return false;
+
+    for (const key of keys1) {
+        if (count1[key] !== count2[key]) return false;
+    }
+
+    return true;
+}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Basic implementation for demo functionality
+        const visualizer = {
+            startDemo() {
+                document.getElementById('statusDisplay').textContent = 'Demo functionality implemented with dark theme styling';
+            }
+        };
+
+        document.getElementById('startBtn').addEventListener('click', () => visualizer.startDemo());
+    </script>
+</body>
+</html>

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>滑动窗口算法完整教程 - 7个经典场景</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #e4e4e7;
+            background: #0a0a0b;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: left;
+            margin-bottom: 60px;
+            padding: 60px 0;
+            border-bottom: 1px solid #27272a;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            font-weight: 300;
+            color: #fafafa;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #a1a1aa;
+            margin-bottom: 30px;
+            max-width: 600px;
+            font-weight: 400;
+        }
+
+        .version-info {
+            text-align: right;
+            color: #71717a;
+            font-size: 0.9em;
+            font-family: 'Monaco', monospace;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .metric {
+            text-align: left;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: 600;
+            color: #fafafa;
+            font-family: 'Monaco', monospace;
+        }
+
+        .metric-label {
+            color: #71717a;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 5px;
+        }
+
+        .intro-section {
+            background: #111113;
+            padding: 40px;
+            border-radius: 2px;
+            margin-bottom: 60px;
+            border: 1px solid #27272a;
+        }
+
+        .intro-section h2 {
+            color: #fafafa;
+            margin-bottom: 30px;
+            font-size: 1.6em;
+            font-weight: 500;
+        }
+
+        .intro-content {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 50px;
+            align-items: start;
+        }
+
+        .intro-text {
+            color: #a1a1aa;
+            font-size: 1em;
+            line-height: 1.8;
+        }
+
+        .intro-text p {
+            margin-bottom: 20px;
+        }
+
+        .learning-path {
+            background: #18181b;
+            padding: 30px;
+            border-radius: 2px;
+            border: 1px solid #3f3f46;
+        }
+
+        .learning-path h3 {
+            color: #fafafa;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .learning-path ol {
+            padding-left: 20px;
+        }
+
+        .learning-path li {
+            margin: 12px 0;
+            color: #a1a1aa;
+        }
+
+        .scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .scenario-card {
+            background: #111113;
+            border-radius: 2px;
+            padding: 30px;
+            border: 1px solid #27272a;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .scenario-card:hover {
+            border-color: #52525b;
+            transform: translateY(-2px);
+        }
+
+        .scenario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .scenario-title h3 {
+            color: #fafafa;
+            font-size: 1.3em;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .scenario-subtitle {
+            color: #71717a;
+            font-size: 0.9em;
+            font-family: 'Monaco', monospace;
+        }
+
+        .difficulty-badge {
+            padding: 4px 10px;
+            border-radius: 2px;
+            font-size: 0.8em;
+            font-weight: 500;
+            font-family: 'Monaco', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .difficulty-easy {
+            background: #166534;
+            color: #dcfce7;
+        }
+
+        .difficulty-medium {
+            background: #a16207;
+            color: #fef3c7;
+        }
+
+        .difficulty-hard {
+            background: #991b1b;
+            color: #fecaca;
+        }
+
+        .scenario-description {
+            color: #a1a1aa;
+            margin-bottom: 25px;
+            line-height: 1.7;
+        }
+
+        .scenario-features {
+            margin-bottom: 25px;
+        }
+
+        .feature-tag {
+            display: inline-block;
+            background: #18181b;
+            color: #a1a1aa;
+            padding: 6px 12px;
+            border-radius: 2px;
+            font-size: 0.8em;
+            margin: 3px 6px 3px 0;
+            border: 1px solid #3f3f46;
+            font-family: 'Monaco', monospace;
+        }
+
+        .scenario-link {
+            display: inline-block;
+            background: #18181b;
+            color: #fafafa;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 2px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+            border: 1px solid #3f3f46;
+        }
+
+        .scenario-link:hover {
+            background: #27272a;
+            border-color: #52525b;
+        }
+
+        .complexity-overview {
+            background: #111113;
+            padding: 40px;
+            border-radius: 2px;
+            margin-bottom: 60px;
+            border: 1px solid #27272a;
+        }
+
+        .complexity-overview h2 {
+            color: #fafafa;
+            margin-bottom: 30px;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .complexity-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-family: 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+
+        .complexity-table th,
+        .complexity-table td {
+            padding: 15px 12px;
+            text-align: left;
+            border-bottom: 1px solid #27272a;
+        }
+
+        .complexity-table th {
+            background: #18181b;
+            font-weight: 600;
+            color: #fafafa;
+            text-transform: uppercase;
+            font-size: 0.8em;
+            letter-spacing: 0.05em;
+        }
+
+        .complexity-table td {
+            color: #a1a1aa;
+        }
+
+        .complexity-table tr:hover {
+            background: #18181b;
+        }
+
+        .footer {
+            text-align: left;
+            padding: 40px;
+            background: #111113;
+            border-radius: 2px;
+            border: 1px solid #27272a;
+        }
+
+        .footer h3 {
+            color: #fafafa;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .footer p {
+            color: #a1a1aa;
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .github-link {
+            display: inline-block;
+            background: #18181b;
+            color: #fafafa;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 2px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid #3f3f46;
+        }
+
+        .github-link:hover {
+            background: #27272a;
+            border-color: #52525b;
+        }
+
+        .original-link {
+            margin-top: 30px;
+            padding: 20px;
+            background: #18181b;
+            border-radius: 2px;
+            border: 1px solid #3f3f46;
+        }
+
+        .original-link h4 {
+            color: #fafafa;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .original-link p {
+            color: #a1a1aa;
+            margin-bottom: 10px;
+        }
+
+        .original-link a {
+            color: #fafafa;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .original-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+
+            .header-top {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .version-info {
+                text-align: left;
+            }
+
+            .intro-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .scenarios-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .scenario-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .difficulty-badge {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部区域 -->
+        <div class="header">
+            <div class="header-top">
+                <div>
+                    <h1>Sliding Window Algorithms</h1>
+                    <p>深入理解滑动窗口算法的经典应用场景，通过可视化演示掌握核心实现原理和优化技巧。</p>
+                </div>
+                <div class="version-info">
+                    <div>Version 2.0</div>
+                    <div>7 Scenarios</div>
+                    <div>Interactive Demos</div>
+                </div>
+            </div>
+
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-value">7</div>
+                    <div class="metric-label">Classic Problems</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">O(n)</div>
+                    <div class="metric-label">Time Complexity</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">100%</div>
+                    <div class="metric-label">Visual Demos</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">Interactive</div>
+                    <div class="metric-label">Learning Mode</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 算法概述 -->
+        <div class="intro-section">
+            <h2>Algorithm Overview</h2>
+            <div class="intro-content">
+                <div class="intro-text">
+                    <p>滑动窗口算法是一种高效的数组/字符串处理技术，通过维护一个窗口在数据结构上滑动来解决子数组/子字符串问题。核心思想是避免重复计算，将暴力解法的 O(n²) 或 O(n³) 时间复杂度优化到 O(n)。</p>
+
+                    <p>算法分为固定窗口和可变窗口两种模式。固定窗口适用于窗口大小恒定的问题；可变窗口根据条件动态调整大小，通常使用双指针技术实现。</p>
+
+                    <p>掌握这些模式后，能够快速识别和解决相关问题，在处理大规模数据时具有显著的性能优势。</p>
+                </div>
+
+                <div class="learning-path">
+                    <h3>Learning Path</h3>
+                    <ol>
+                        <li>固定窗口基础实现</li>
+                        <li>可变窗口与双指针</li>
+                        <li>哈希表优化技巧</li>
+                        <li>单调队列应用</li>
+                        <li>复杂约束处理</li>
+                        <li>实际问题建模</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- 原始演示文件 -->
+        <div class="original-link">
+            <h4>Legacy Demo</h4>
+            <p>原始固定窗口演示文件（改进前版本）</p>
+            <a href="滑动窗口判断内容重复.html" target="_blank">view original demo</a>
+        </div>
+
+        <!-- 场景演示 -->
+        <div class="scenarios-grid">
+            <!-- 场景1: 无重复字符的最长子串 -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-title">
+                        <h3>Longest Substring Without Repeating</h3>
+                        <div class="scenario-subtitle">variable_window • hash_set</div>
+                    </div>
+                    <div class="difficulty-badge difficulty-medium">medium</div>
+                </div>
+                <div class="scenario-description">
+                    使用双指针维护无重复字符的窗口，动态调整窗口大小找到最长子串。展示左右指针的协调移动和字符集合的维护过程。
+                </div>
+                <div class="scenario-features">
+                    <span class="feature-tag">two_pointers</span>
+                    <span class="feature-tag">hash_set</span>
+                    <span class="feature-tag">dynamic_window</span>
+                    <span class="feature-tag">leetcode_3</span>
+                </div>
+                <a href="scenario1_longest_substring.html" class="scenario-link">Launch Demo</a>
+            </div>
+
+            <!-- 场景2: 固定窗口大小问题 -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-title">
+                        <h3>Fixed Window Duplicate Detection</h3>
+                        <div class="scenario-subtitle">fixed_window • char_frequency</div>
+                    </div>
+                    <div class="difficulty-badge difficulty-easy">easy</div>
+                </div>
+                <div class="scenario-description">
+                    在固定长度窗口中检测重复字符。这是改进的原始演示版本，展示固定窗口的基本思想和实现方式。
+                </div>
+                <div class="scenario-features">
+                    <span class="feature-tag">fixed_window</span>
+                    <span class="feature-tag">hash_set</span>
+                    <span class="feature-tag">duplicate_check</span>
+                    <span class="feature-tag">foundation</span>
+                </div>
+                <a href="滑动窗口判断内容重复.html" class="scenario-link">Launch Demo</a>
+            </div>
+
+            <!-- 场景3: 最小窗口子串 -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-title">
+                        <h3>Minimum Window Substring</h3>
+                        <div class="scenario-subtitle">variable_window • char_frequency</div>
+                    </div>
+                    <div class="difficulty-badge difficulty-hard">hard</div>
+                </div>
+                <div class="scenario-description">
+                    在源字符串中找到包含目标字符串所有字符的最小窗口。展示复杂的窗口收缩和扩展逻辑实现。
+                </div>
+                <div class="scenario-features">
+                    <span class="feature-tag">char_frequency</span>
+                    <span class="feature-tag">window_shrink</span>
+                    <span class="feature-tag">hash_map</span>
+                    <span class="feature-tag">leetcode_76</span>
+                </div>
+                <a href="scenario3_minimum_window.html" class="scenario-link">Launch Demo</a>
+            </div>
+
+            <!-- 场景4: 字符串排列匹配 -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-title">
+                        <h3>Permutation in String</h3>
+                        <div class="scenario-subtitle">fixed_window • permutation_match</div>
+                    </div>
+                    <div class="difficulty-badge difficulty-medium">medium</div>
+                </div>
+                <div class="scenario-description">
+                    判断字符串中是否包含另一个字符串的排列，使用固定大小滑动窗口和字符频次比较实现高效匹配。
+                </div>
+                <div class="scenario-features">
+                    <span class="feature-tag">permutation</span>
+                    <span class="feature-tag">frequency_match</span>
+                    <span class="feature-tag">fixed_window</span>
+                    <span class="feature-tag">leetcode_567</span>
+                </div>
+                <a href="scenario4_permutation_match.html" class="scenario-link">Launch Demo</a>
+            </div>
+
+            <!-- 场景5: 数组滑动窗口最值 -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-title">
+                        <h3>Sliding Window Maximum</h3>
+                        <div class="scenario-subtitle">fixed_window • monotonic_deque</div>
+                    </div>
+                    <div class="difficulty-badge difficulty-hard">hard</div>
+                </div>
+                <div class="scenario-description">
+                    使用双端队列高效求解滑动窗口最大值问题，展示单调队列的强大威力和技巧性优化实现。
+                </div>
+                <div class="scenario-features">
+                    <span class="feature-tag">deque</span>
+                    <span class="feature-tag">monotonic</span>
+                    <span class="feature-tag">max_query</span>
+                    <span class="feature-tag">leetcode_239</span>
+                </div>
+                <a href="scenario5_sliding_maximum.html" class="scenario-link">Launch Demo</a>
+            </div>
+
+            <!-- 场景6: 水果篮问题 -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-title">
+                        <h3>Fruit Into Baskets</h3>
+                        <div class="scenario-subtitle">variable_window • type_constraint</div>
+                    </div>
+                    <div class="difficulty-badge difficulty-medium">medium</div>
+                </div>
+                <div class="scenario-description">
+                    最多包含两种类型的最长子数组问题。展示类型约束下的窗口管理技巧和哈希表优化策略。
+                </div>
+                <div class="scenario-features">
+                    <span class="feature-tag">type_limit</span>
+                    <span class="feature-tag">longest_subarray</span>
+                    <span class="feature-tag">hash_map</span>
+                    <span class="feature-tag">leetcode_904</span>
+                </div>
+                <a href="scenario6_fruit_basket.html" class="scenario-link">Launch Demo</a>
+            </div>
+
+            <!-- 场景7: 股票买卖最佳时机 -->
+            <div class="scenario-card">
+                <div class="scenario-header">
+                    <div class="scenario-title">
+                        <h3>Best Time to Buy and Sell Stock</h3>
+                        <div class="scenario-subtitle">single_pass • dynamic_programming</div>
+                    </div>
+                    <div class="difficulty-badge difficulty-easy">easy</div>
+                </div>
+                <div class="scenario-description">
+                    股票交易问题，体现滑动窗口核心思想。包含股价图表和利润分析的完整可视化展示。
+                </div>
+                <div class="scenario-features">
+                    <span class="feature-tag">stock_trading</span>
+                    <span class="feature-tag">profit_max</span>
+                    <span class="feature-tag">chart_visual</span>
+                    <span class="feature-tag">leetcode_121</span>
+                </div>
+                <a href="scenario7_stock.html" class="scenario-link">Launch Demo</a>
+            </div>
+        </div>
+
+        <!-- 复杂度分析 -->
+        <div class="complexity-overview">
+            <h2>Complexity Analysis</h2>
+            <table class="complexity-table">
+                <thead>
+                    <tr>
+                        <th>scenario</th>
+                        <th>time</th>
+                        <th>space</th>
+                        <th>data_structure</th>
+                        <th>level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>longest_substring_without_repeating</td>
+                        <td>O(n)</td>
+                        <td>O(min(m,n))</td>
+                        <td>HashSet</td>
+                        <td>medium</td>
+                    </tr>
+                    <tr>
+                        <td>fixed_window_duplicate_detection</td>
+                        <td>O(n)</td>
+                        <td>O(k)</td>
+                        <td>HashSet</td>
+                        <td>easy</td>
+                    </tr>
+                    <tr>
+                        <td>minimum_window_substring</td>
+                        <td>O(|s| + |t|)</td>
+                        <td>O(|s| + |t|)</td>
+                        <td>HashMap</td>
+                        <td>hard</td>
+                    </tr>
+                    <tr>
+                        <td>permutation_in_string</td>
+                        <td>O(|s| + |p|)</td>
+                        <td>O(|p|)</td>
+                        <td>HashMap</td>
+                        <td>medium</td>
+                    </tr>
+                    <tr>
+                        <td>sliding_window_maximum</td>
+                        <td>O(n)</td>
+                        <td>O(k)</td>
+                        <td>Deque</td>
+                        <td>hard</td>
+                    </tr>
+                    <tr>
+                        <td>fruit_into_baskets</td>
+                        <td>O(n)</td>
+                        <td>O(1)</td>
+                        <td>HashMap</td>
+                        <td>medium</td>
+                    </tr>
+                    <tr>
+                        <td>best_time_buy_sell_stock</td>
+                        <td>O(n)</td>
+                        <td>O(1)</td>
+                        <td>Variables</td>
+                        <td>easy</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 页脚 -->
+        <div class="footer">
+            <h3>Next Steps</h3>
+            <p>完成这7个场景的学习后，你已经掌握了滑动窗口算法的核心思想和主要应用模式。建议继续挑战更多相关的LeetCode题目来巩固理解。</p>
+            <p>这些可视化演示展示了算法的执行过程，有助于深入理解实现细节和优化技巧。</p>
+
+            <a href="https://github.com/yourusername/sliding-window-tutorial" class="github-link" target="_blank">
+                View Source Code
+            </a>
+        </div>
+    </div>
+</body>
+</html>

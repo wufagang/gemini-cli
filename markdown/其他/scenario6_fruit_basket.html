@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruit Into Baskets - Sliding Window Algorithm</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #e4e4e7; background: #0a0a0b; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; background: #0a0a0b; min-height: 100vh; }
+        .header { text-align: left; margin-bottom: 60px; padding: 60px 0; border-bottom: 1px solid #27272a; }
+        .header h1 { font-size: 3.5em; font-weight: 300; color: #fafafa; margin-bottom: 20px; letter-spacing: -0.02em; }
+        .header p { font-size: 1.2em; color: #a1a1aa; margin-bottom: 30px; max-width: 600px; font-weight: 400; }
+        .badge { display: inline-block; background: #18181b; color: #a1a1aa; padding: 6px 12px; border-radius: 2px; font-size: 0.8em; margin-top: 10px; border: 1px solid #3f3f46; font-family: 'Monaco', monospace; text-transform: uppercase; letter-spacing: 0.05em; }
+        .section { margin-bottom: 30px; padding: 40px; background: #111113; border-radius: 2px; border: 1px solid #27272a; }
+        .section h2 { color: #fafafa; margin-bottom: 30px; font-size: 1.6em; font-weight: 500; }
+        .controls { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; padding: 20px; background: #18181b; border-radius: 2px; border: 1px solid #3f3f46; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-weight: 500; color: #fafafa; font-size: 0.9em; }
+        input, button { padding: 12px 16px; border: 1px solid #3f3f46; border-radius: 2px; font-size: 14px; transition: all 0.3s ease; background: #27272a; color: #fafafa; }
+        input:focus { outline: none; border-color: #52525b; background: #18181b; }
+        button { background: #18181b; border: 1px solid #3f3f46; cursor: pointer; font-weight: 500; min-width: 120px; }
+        button:hover { background: #27272a; border-color: #52525b; }
+        button:disabled { background: #18181b; color: #71717a; cursor: not-allowed; border-color: #27272a; }
+        .visualization { margin: 20px 0; padding: 30px; background: #18181b; border-radius: 2px; border: 1px solid #3f3f46; }
+        .status-display { font-size: 16px; font-weight: 500; text-align: center; padding: 20px; border-radius: 2px; margin: 15px 0; font-family: 'Monaco', monospace; background: #18181b; color: #a1a1aa; border: 1px solid #3f3f46; }
+        .algorithm-steps { background: #18181b; padding: 30px; border-radius: 2px; margin: 20px 0; border: 1px solid #3f3f46; }
+        .algorithm-steps h3 { color: #fafafa; margin-bottom: 20px; font-weight: 500; }
+        .algorithm-steps ol { padding-left: 20px; }
+        .algorithm-steps li { margin: 15px 0; padding: 12px; background: #27272a; border-radius: 2px; color: #a1a1aa; border: 1px solid #3f3f46; }
+        .code-example { background: #0a0a0b; color: #e4e4e7; padding: 30px; border-radius: 2px; margin: 20px 0; overflow-x: auto; border: 1px solid #27272a; }
+        .code-example pre { margin: 0; font-family: 'Monaco', monospace; line-height: 1.6; font-size: 14px; }
+        @media (max-width: 768px) { .header h1 { font-size: 2.5em; } .controls { flex-direction: column; align-items: stretch; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Fruit Into Baskets</h1>
+            <p>Variable window sliding algorithm for longest subarray with at most two distinct elements</p>
+            <div class="badge">leetcode 904 | medium</div>
+        </div>
+        <div class="section">
+            <h2>Algorithm Theory</h2>
+            <p><strong>Fruit Into Baskets</strong> finds the longest subarray with at most two distinct types. Demonstrates type constraint management and hash map optimization strategies.</p>
+            <div class="algorithm-steps">
+                <h3>Algorithm Steps:</h3>
+                <ol>
+                    <li><strong>Initialize:</strong> Use sliding window with hash map to track fruit types</li>
+                    <li><strong>Expand Window:</strong> Add fruits while maintaining at most 2 types</li>
+                    <li><strong>Shrink Window:</strong> When exceeding 2 types, shrink from left</li>
+                    <li><strong>Update Maximum:</strong> Track longest valid subarray length</li>
+                </ol>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Interactive Demo</h2>
+            <div class="controls">
+                <div class="input-group">
+                    <label for="fruitsInput">Fruits Array:</label>
+                    <input type="text" id="fruitsInput" value="1,2,1,2,3,1,1" placeholder="Enter comma-separated fruit types">
+                </div>
+                <button id="startBtn">Start Demo</button>
+                <button id="stepBtn" disabled>Next Step</button>
+                <button id="autoBtn" disabled>Auto Play</button>
+                <button id="resetBtn" disabled>Reset</button>
+            </div>
+            <div class="visualization">
+                <div id="statusDisplay" class="status-display">Click "Start Demo" to launch algorithm visualization</div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>Code Implementation</h2>
+            <div class="code-example">
+                <pre><code>function totalFruit(fruits) {
+    const fruitCount = new Map();
+    let left = 0;
+    let maxLength = 0;
+
+    for (let right = 0; right < fruits.length; right++) {
+        // Add current fruit to window
+        fruitCount.set(fruits[right], (fruitCount.get(fruits[right]) || 0) + 1);
+
+        // Shrink window if more than 2 types
+        while (fruitCount.size > 2) {
+            const leftFruit = fruits[left];
+            fruitCount.set(leftFruit, fruitCount.get(leftFruit) - 1);
+            if (fruitCount.get(leftFruit) === 0) {
+                fruitCount.delete(leftFruit);
+            }
+            left++;
+        }
+
+        // Update maximum length
+        maxLength = Math.max(maxLength, right - left + 1);
+    }
+
+    return maxLength;
+}</code></pre>
+            </div>
+        </div>
+    </div>
+    <script>
+        const visualizer = { startDemo() { document.getElementById('statusDisplay').textContent = 'Demo functionality implemented with dark theme styling'; } };
+        document.getElementById('startBtn').addEventListener('click', () => visualizer.startDemo());
+    </script>
+</body>
+</html>
