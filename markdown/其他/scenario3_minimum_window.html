@@ -512,114 +512,114 @@
 
         <!-- Algorithm Theory Section -->
         <div class="section theory-section">
-            <h2>Algorithm Theory</h2>
-            <p><strong>Minimum Window Substring</strong> is a classic hard application of sliding window algorithm. Find the minimum contiguous substring in source string that contains all characters (including duplicates) of target string.</p>
+            <h2>算法原理</h2>
+            <p><strong>最小窗口子串</strong>是滑动窗口算法的经典困难应用。在源字符串中找到包含目标字符串所有字符（包括重复字符）的最小连续子串。</p>
 
             <div class="algorithm-steps">
-                <h3>Algorithm Steps:</h3>
+                <h3>算法步骤：</h3>
                 <ol>
-                    <li><strong>Preprocessing:</strong> Count frequency of each character in target string</li>
-                    <li><strong>Initialize:</strong> Both left and right pointers start at beginning, create window character frequency counter</li>
-                    <li><strong>Expand Window:</strong> Move right pointer forward, add new character to window and update frequency</li>
-                    <li><strong>Check Coverage:</strong> Determine if current window contains all characters of target string</li>
-                    <li><strong>Shrink Window:</strong> When window satisfies condition, try moving left pointer to find smaller window</li>
-                    <li><strong>Update Minimum:</strong> Record the minimum window that satisfies condition</li>
-                    <li><strong>Continue:</strong> Repeat steps 3-6 until right pointer reaches end</li>
+                    <li><strong>预处理：</strong>统计目标字符串中每个字符的频次</li>
+                    <li><strong>初始化：</strong>左右指针都从起始位置开始，创建窗口字符频次计数器</li>
+                    <li><strong>扩展窗口：</strong>右指针向前移动，将新字符加入窗口并更新频次</li>
+                    <li><strong>检查覆盖：</strong>判断当前窗口是否包含目标字符串的所有字符</li>
+                    <li><strong>收缩窗口：</strong>当窗口满足条件时，尝试移动左指针寻找更小窗口</li>
+                    <li><strong>更新最小值：</strong>记录满足条件的最小窗口</li>
+                    <li><strong>继续执行：</strong>重复步骤3-6直到右指针到达末尾</li>
                 </ol>
             </div>
 
             <div class="complexity-info">
                 <div class="complexity-card">
-                    <h4>Time Complexity</h4>
+                    <h4>时间复杂度</h4>
                     <p><strong>O(|s| + |t|)</strong></p>
-                    <p>where |s| and |t| are lengths of source and target strings</p>
+                    <p>其中|s|和|t|分别为源字符串和目标字符串的长度</p>
                 </div>
                 <div class="complexity-card">
-                    <h4>Space Complexity</h4>
+                    <h4>空间复杂度</h4>
                     <p><strong>O(|s| + |t|)</strong></p>
-                    <p>Additional hash tables needed to store character frequencies</p>
+                    <p>需要额外的哈希表存储字符频次</p>
                 </div>
             </div>
         </div>
 
         <!-- Interactive Demo Section -->
         <div class="section demo-section">
-            <h2>Interactive Demo</h2>
+            <h2>交互演示</h2>
 
             <div class="controls">
                 <div class="input-group">
-                    <label for="sourceInput">Source String:</label>
-                    <input type="text" id="sourceInput" value="ADOBECODEBANC" placeholder="Enter source string">
+                    <label for="sourceInput">源字符串：</label>
+                    <input type="text" id="sourceInput" value="ADOBECODEBANC" placeholder="输入源字符串">
                 </div>
 
                 <div class="input-group">
-                    <label for="targetInput">Target String:</label>
-                    <input type="text" id="targetInput" value="ABC" placeholder="Enter target string">
+                    <label for="targetInput">目标字符串：</label>
+                    <input type="text" id="targetInput" value="ABC" placeholder="输入目标字符串">
                 </div>
 
-                <button id="startBtn">Start Demo</button>
-                <button id="stepBtn" disabled>Next Step</button>
-                <button id="autoBtn" disabled>Auto Play</button>
-                <button id="resetBtn" disabled>Reset</button>
+                <button id="startBtn">开始演示</button>
+                <button id="stepBtn" disabled>下一步</button>
+                <button id="autoBtn" disabled>自动播放</button>
+                <button id="resetBtn" disabled>重置</button>
             </div>
 
             <!-- Visualization Area -->
             <div class="visualization">
                 <div class="string-section">
-                    <div class="string-label">Source String:</div>
+                    <div class="string-label">源字符串：</div>
                     <div id="sourceDisplay" class="string-display"></div>
                 </div>
 
                 <div class="string-section">
-                    <div class="string-label">Target String:</div>
+                    <div class="string-label">目标字符串：</div>
                     <div id="targetDisplay" class="string-display"></div>
                 </div>
 
                 <div class="frequency-display">
                     <div class="frequency-section target">
-                        <h4>Target Character Frequency</h4>
+                        <h4>目标字符频次</h4>
                         <div id="targetFrequency"></div>
                     </div>
                     <div class="frequency-section window">
-                        <h4>Window Character Frequency</h4>
+                        <h4>窗口字符频次</h4>
                         <div id="windowFrequency"></div>
                     </div>
                 </div>
 
                 <div class="pointers-info">
                     <div class="pointer-stat">
-                        <span>Left Pointer: </span>
+                        <span>左指针：</span>
                         <span id="leftPointer">-</span>
                     </div>
                     <div class="pointer-stat">
-                        <span>Right Pointer: </span>
+                        <span>右指针：</span>
                         <span id="rightPointer">-</span>
                     </div>
                     <div class="pointer-stat">
-                        <span>Window Length: </span>
+                        <span>窗口长度：</span>
                         <span id="windowLength">0</span>
                     </div>
                     <div class="pointer-stat">
-                        <span>Min Length: </span>
+                        <span>最小长度：</span>
                         <span id="minLength">∞</span>
                     </div>
                     <div class="pointer-stat">
-                        <span>Current Step: </span>
+                        <span>当前步骤：</span>
                         <span id="currentStep">0</span>
                     </div>
                 </div>
 
                 <div id="statusDisplay" class="status-display status-waiting">
-                    Click "Start Demo" to launch algorithm visualization
+                    点击"开始演示"启动算法可视化
                 </div>
 
                 <div id="stepExplanation" class="step-explanation" style="display: none;">
-                    <h3>Current Step Explanation</h3>
+                    <h3>当前步骤说明</h3>
                     <p id="explanationText"></p>
                 </div>
 
                 <div id="resultDisplay" class="result-display" style="display: none;">
-                    <h3>Final Result</h3>
+                    <h3>最终结果</h3>
                     <div class="result-text" id="resultText"></div>
                 </div>
             </div>
@@ -627,7 +627,7 @@
 
         <!-- Code Implementation Section -->
         <div class="section">
-            <h2>Code Implementation</h2>
+            <h2>代码实现</h2>
             <div class="code-example">
                 <pre><code>function minWindow(s, t) {
     if (s.length < t.length) return "";
@@ -739,12 +739,12 @@
                 this.target = this.targetInput.value.trim();
 
                 if (this.source.length === 0 || this.target.length === 0) {
-                    alert('Please enter valid source and target strings');
+                    alert('请输入有效的源字符串和目标字符串');
                     return;
                 }
 
                 if (this.source.length < this.target.length) {
-                    alert('Source string length cannot be less than target string length');
+                    alert('源字符串长度不能小于目标字符串长度');
                     return;
                 }
 
@@ -785,7 +785,7 @@
                     minLen: minLen,
                     minStart: minStart,
                     minEnd: minEnd,
-                    explanation: 'Initialize: Count target string frequency, set left and right pointers'
+                    explanation: '初始化：统计目标字符串频次，设置左右指针'
                 });
 
                 while (right < this.source.length) {
@@ -811,7 +811,7 @@
                         minLen: minLen,
                         minStart: minStart,
                         minEnd: minEnd,
-                        explanation: `Right pointer moves to ${right}, adding character '${rightChar}'. Satisfied ${formedChars}/${requiredChars} character requirements`
+                        explanation: `右指针移动到 ${right}，添加字符 '${rightChar}'。满足 ${formedChars}/${requiredChars} 个字符要求`
                     });
 
                     // Try to shrink window
@@ -835,7 +835,7 @@
                                 minLen: minLen,
                                 minStart: minStart,
                                 minEnd: minEnd,
-                                explanation: `Found new minimum window! Length: ${minLen}, content: "${this.source.substring(minStart, minEnd + 1)}"`
+                                explanation: `发现新的最小窗口！长度：${minLen}，内容："${this.source.substring(minStart, minEnd + 1)}"`
                             });
                         }
 
@@ -860,7 +860,7 @@
                             minLen: minLen,
                             minStart: minStart,
                             minEnd: minEnd,
-                            explanation: `Left pointer moves to ${left}, removing character '${leftChar}'. Now satisfied ${formedChars}/${requiredChars} character requirements`
+                            explanation: `左指针移动到 ${left}，移除字符 '${leftChar}'。现在满足 ${formedChars}/${requiredChars} 个字符要求`
                         });
 
                         if (formedChars < requiredChars) break;
@@ -882,8 +882,8 @@
                     minStart: minStart,
                     minEnd: minEnd,
                     explanation: minLen === Infinity ?
-                        'Algorithm complete! No window found containing all target characters' :
-                        `Algorithm complete! Minimum window length: ${minLen}, content: "${this.source.substring(minStart, minEnd + 1)}"`
+                        '算法执行完毕！未找到包含所有目标字符的窗口' :
+                        `算法执行完毕！最小窗口长度：${minLen}，内容："${this.source.substring(minStart, minEnd + 1)}"`
                 });
 
                 this.finalResult = {
@@ -1020,19 +1020,19 @@
 
                 // Update status display
                 let statusClass = 'status-processing';
-                let statusText = 'Searching for minimum window...';
+                let statusText = '正在搜索最小窗口...';
 
                 if (step.type === 'final') {
                     if (step.minLen === Infinity) {
                         statusClass = 'status-not-found';
-                        statusText = 'No window found containing all target characters';
+                        statusText = '未找到包含所有目标字符的窗口';
                     } else {
                         statusClass = 'status-found';
-                        statusText = 'Minimum window found!';
+                        statusText = '找到最小窗口！';
                     }
                 } else if (step.formedChars === step.requiredChars) {
                     statusClass = 'status-found';
-                    statusText = 'Current window contains all target characters';
+                    statusText = '当前窗口包含所有目标字符';
                 }
 
                 this.statusDisplay.className = `status-display ${statusClass}`;
@@ -1049,14 +1049,14 @@
                 this.resultDisplay.style.display = 'block';
                 if (this.finalResult.found) {
                     this.resultText.innerHTML = `
-                        Minimum window substring: <strong>"${this.finalResult.window}"</strong><br>
-                        Length: <strong>${this.finalResult.length}</strong><br>
-                        Position: <strong>[${this.finalResult.start}, ${this.finalResult.end}]</strong>
+                        最小窗口子串：<strong>"${this.finalResult.window}"</strong><br>
+                        长度：<strong>${this.finalResult.length}</strong><br>
+                        位置：<strong>[${this.finalResult.start}, ${this.finalResult.end}]</strong>
                     `;
                 } else {
                     this.resultText.innerHTML = `
-                        <strong>No window found containing all target characters</strong><br>
-                        Please check if target string contains characters not in source string
+                        <strong>未找到包含所有目标字符的窗口</strong><br>
+                        请检查目标字符串是否包含源字符串中不存在的字符
                     `;
                 }
             }
@@ -1079,7 +1079,7 @@
 
             startAutoPlay() {
                 this.isPlaying = true;
-                this.autoBtn.textContent = 'Pause';
+                this.autoBtn.textContent = '暂停';
                 this.stepBtn.disabled = true;
 
                 this.autoInterval = setInterval(() => {
@@ -1094,7 +1094,7 @@
 
             stopAutoPlay() {
                 this.isPlaying = false;
-                this.autoBtn.textContent = 'Auto Play';
+                this.autoBtn.textContent = '自动播放';
                 this.stepBtn.disabled = false;
 
                 if (this.autoInterval) {
@@ -1124,7 +1124,7 @@
                 this.minLengthSpan.textContent = '∞';
                 this.currentStepSpan.textContent = '0';
                 this.statusDisplay.className = 'status-display status-waiting';
-                this.statusDisplay.textContent = 'Click "Start Demo" to launch algorithm visualization';
+                this.statusDisplay.textContent = '点击"开始演示"启动算法可视化';
                 this.stepExplanation.style.display = 'none';
                 this.resultDisplay.style.display = 'none';
 

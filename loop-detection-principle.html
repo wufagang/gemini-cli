@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>循环检测算法原理可视化</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: #0d1117;
+            color: #e6edf3;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #58a6ff;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .algorithm-steps {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .step-panel {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .step-title {
+            color: #f79000;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-section {
+            grid-column: 1 / -1;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        #contentInput {
+            width: 100%;
+            height: 80px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            color: #e6edf3;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .controls {
+            margin: 15px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #238636;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #2ea043;
+        }
+
+        .demo-btn {
+            background: #0969da;
+        }
+
+        .demo-btn:hover {
+            background: #0860ca;
+        }
+
+        .clear-btn {
+            background: #da3633;
+        }
+
+        .clear-btn:hover {
+            background: #b93937;
+        }
+
+        /* 核心可视化区域 */
+        .visualization-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chunk-processing {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .content-chunks {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .chunk-item {
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 12px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .chunk-item.processing {
+            border-color: #f79000;
+            background: #2d1b10;
+            animation: pulse 1s ease-in-out;
+        }
+
+        .chunk-item.duplicate {
+            border-color: #da3633;
+            background: #2d1618;
+        }
+
+        .chunk-hash {
+            font-size: 10px;
+            color: #7d8590;
+            font-family: monospace;
+            margin-bottom: 8px;
+        }
+
+        .chunk-content {
+            font-size: 13px;
+            color: #e6edf3;
+            margin-bottom: 8px;
+        }
+
+        .chunk-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #7d8590;
+        }
+
+        .repeat-count {
+            background: #da3633;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .repeat-count.normal {
+            background: #238636;
+        }
+
+        .repeat-count.warning {
+            background: #f79000;
+        }
+
+        .repeat-count.danger {
+            background: #da3633;
+            animation: blink 1s infinite;
+        }
+
+        /* 统计面板 */
+        .stats-panel {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .hash-table {
+            margin-top: 15px;
+        }
+
+        .hash-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 4px 0;
+            background: #21262d;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .hash-entry.highlighted {
+            background: #2d1b10;
+            border: 1px solid #f79000;
+        }
+
+        .hash-entry.loop-detected {
+            background: #2d1618;
+            border: 1px solid #da3633;
+            animation: blink 2s infinite;
+        }
+
+        .hash-value {
+            font-family: monospace;
+            color: #79c0ff;
+            font-size: 10px;
+        }
+
+        .count-badge {
+            background: #21262d;
+            color: #e6edf3;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .count-badge.warning {
+            background: #f79000;
+            color: #000;
+        }
+
+        .count-badge.danger {
+            background: #da3633;
+            color: #fff;
+        }
+
+        /* 滑动窗口可视化 */
+        .sliding-window {
+            grid-column: 1 / -1;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .window-display {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            position: relative;
+            min-height: 100px;
+        }
+
+        .window-content {
+            font-family: monospace;
+            font-size: 12px;
+            color: #e6edf3;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        .window-indicator {
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            background: #238636;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .truncation-indicator {
+            color: #f79000;
+            font-style: italic;
+            margin-top: 10px;
+            font-size: 11px;
+        }
+
+        /* 动画效果 */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        /* 算法状态指示器 */
+        .algorithm-status {
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #0d1117;
+            border-radius: 4px;
+        }
+
+        .status-label {
+            color: #7d8590;
+            font-size: 12px;
+        }
+
+        .status-value {
+            font-weight: bold;
+            color: #e6edf3;
+        }
+
+        .status-value.normal { color: #3fb950; }
+        .status-value.warning { color: #f79000; }
+        .status-value.danger { color: #da3633; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 循环检测算法原理解析</h1>
+            <p>深度可视化内容重复检测的核心机制</p>
+        </div>
+
+        <div class="algorithm-status">
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="status-label">窗口大小:</span>
+                    <span id="windowSize" class="status-value normal">0 / 1000</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">内容块数:</span>
+                    <span id="chunkCount" class="status-value normal">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">哈希表条目:</span>
+                    <span id="hashEntries" class="status-value normal">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">最高重复次数:</span>
+                    <span id="maxRepeats" class="status-value normal">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">循环状态:</span>
+                    <span id="loopStatus" class="status-value normal">正常</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">阈值:</span>
+                    <span id="threshold" class="status-value normal">3</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="step-title">
+                📝 输入内容进行分析
+            </div>
+            <textarea id="contentInput" placeholder="输入内容查看循环检测原理...
+
+试试这些例子：
+- 重复的句子重复的句子重复的句子
+- Hello world Hello world Hello world
+- 不同的内容不会触发循环检测"></textarea>
+
+            <div class="controls">
+                <button onclick="analyzeContent()">🔍 分析内容</button>
+                <button class="demo-btn" onclick="runDemo('simple')">📚 简单重复演示</button>
+                <button class="demo-btn" onclick="runDemo('gradual')">📈 渐进重复演示</button>
+                <button class="demo-btn" onclick="runDemo('mixed')">🎭 混合内容演示</button>
+                <button class="demo-btn" onclick="runDemo('threshold')">⚖️ 阈值测试演示</button>
+                <button class="clear-btn" onclick="clearAll()">🗑️ 清空所有</button>
+            </div>
+        </div>
+
+        <div class="visualization-area">
+            <div class="chunk-processing">
+                <div class="step-title">
+                    🧩 步骤1: 内容分块与哈希
+                </div>
+                <p style="font-size: 12px; color: #7d8590; margin-bottom: 15px;">
+                    内容被分割成块，每块计算哈希值用于快速比较
+                </p>
+                <div id="contentChunks" class="content-chunks">
+                    <div style="text-align: center; color: #7d8590; padding: 20px;">
+                        等待输入内容...
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-panel">
+                <div class="step-title">
+                    📊 步骤2: 重复统计与检测
+                </div>
+                <p style="font-size: 12px; color: #7d8590; margin-bottom: 15px;">
+                    统计每个哈希值的出现次数，超过阈值则触发循环警告
+                </p>
+                <div id="hashTable" class="hash-table">
+                    <div style="text-align: center; color: #7d8590; padding: 20px;">
+                        暂无统计数据...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sliding-window">
+            <div class="step-title">
+                🪟 步骤3: 滑动窗口机制
+            </div>
+            <p style="font-size: 12px; color: #7d8590; margin-bottom: 15px;">
+                维护固定大小的历史窗口，超出限制时从头部截断并更新所有索引
+            </p>
+            <div class="window-display">
+                <div class="window-indicator">
+                    窗口: <span id="windowLength">0</span> 字符
+                </div>
+                <div id="windowContent" class="window-content">
+                    窗口为空，等待内容输入...
+                </div>
+                <div id="truncationInfo" class="truncation-indicator" style="display: none;">
+                    ⚠️ 窗口已满，正在截断旧内容...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 算法状态
+        let contentHistory = '';
+        let contentChunks = [];
+        let hashStats = new Map();
+        let chunkIndex = 0;
+        const MAX_WINDOW_SIZE = 1000;
+        const LOOP_THRESHOLD = 3;
+
+        // 简单哈希函数
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // 转换为32位整数
+            }
+            return Math.abs(hash).toString(16).substring(0, 8);
+        }
+
+        // 将内容分块
+        function chunkContent(content) {
+            // 按句子分块，或者按固定长度分块
+            const sentences = content.split(/[.!?。！？]\s*/).filter(s => s.trim().length > 0);
+            if (sentences.length > 1) {
+                return sentences.map(s => s.trim()).filter(s => s.length > 0);
+            }
+
+            // 如果没有明显的句子分隔符，按词组分块
+            const words = content.trim().split(/\s+/);
+            const chunks = [];
+            for (let i = 0; i < words.length; i += 3) {
+                const chunk = words.slice(i, i + 3).join(' ');
+                if (chunk.trim()) chunks.push(chunk);
+            }
+            return chunks.length > 0 ? chunks : [content.trim()];
+        }
+
+        // 更新状态显示
+        function updateStatus() {
+            document.getElementById('windowSize').textContent = `${contentHistory.length} / ${MAX_WINDOW_SIZE}`;
+            document.getElementById('chunkCount').textContent = contentChunks.length;
+            document.getElementById('hashEntries').textContent = hashStats.size;
+
+            const maxRepeats = hashStats.size > 0 ? Math.max(...hashStats.values()) : 0;
+            document.getElementById('maxRepeats').textContent = maxRepeats;
+
+            const maxRepeatsEl = document.getElementById('maxRepeats');
+            if (maxRepeats >= LOOP_THRESHOLD) {
+                maxRepeatsEl.className = 'status-value danger';
+            } else if (maxRepeats >= 2) {
+                maxRepeatsEl.className = 'status-value warning';
+            } else {
+                maxRepeatsEl.className = 'status-value normal';
+            }
+
+            const loopDetected = maxRepeats >= LOOP_THRESHOLD;
+            const loopStatusEl = document.getElementById('loopStatus');
+            loopStatusEl.textContent = loopDetected ? '检测到循环!' : '正常';
+            loopStatusEl.className = loopDetected ? 'status-value danger' : 'status-value normal';
+
+            document.getElementById('threshold').textContent = LOOP_THRESHOLD;
+        }
+
+        // 添加内容块到可视化
+        function addChunkVisualization(chunk, hash, isNew = true) {
+            const chunksContainer = document.getElementById('contentChunks');
+
+            if (isNew && chunksContainer.children.length === 1 &&
+                chunksContainer.children[0].textContent.includes('等待输入')) {
+                chunksContainer.innerHTML = '';
+            }
+
+            const chunkEl = document.createElement('div');
+            chunkEl.className = 'chunk-item slide-in';
+            if (isNew) chunkEl.classList.add('processing');
+
+            const count = hashStats.get(hash) || 0;
+            const isDuplicate = count > 1;
+
+            if (isDuplicate) {
+                chunkEl.classList.add('duplicate');
+            }
+
+            chunkEl.innerHTML = `
+                <div class="chunk-hash">Hash: ${hash}</div>
+                <div class="chunk-content">${chunk}</div>
+                <div class="chunk-meta">
+                    <span>块 #${chunkIndex++}</span>
+                    <span class="repeat-count ${count === 1 ? 'normal' : count < LOOP_THRESHOLD ? 'warning' : 'danger'}">
+                        重复 ${count} 次
+                    </span>
+                </div>
+            `;
+
+            chunksContainer.appendChild(chunkEl);
+
+            // 移除处理中的状态
+            if (isNew) {
+                setTimeout(() => {
+                    chunkEl.classList.remove('processing');
+                }, 1000);
+            }
+
+            // 滚动到最新项
+            chunkEl.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 更新哈希统计表
+        function updateHashTable() {
+            const tableContainer = document.getElementById('hashTable');
+
+            if (hashStats.size === 0) {
+                tableContainer.innerHTML = `
+                    <div style="text-align: center; color: #7d8590; padding: 20px;">
+                        暂无统计数据...
+                    </div>
+                `;
+                return;
+            }
+
+            const sortedEntries = Array.from(hashStats.entries())
+                .sort((a, b) => b[1] - a[1]); // 按出现次数排序
+
+            tableContainer.innerHTML = sortedEntries.map(([hash, count]) => {
+                const isLoopDetected = count >= LOOP_THRESHOLD;
+                const isWarning = count >= 2;
+                const className = isLoopDetected ? 'loop-detected' :
+                                isWarning ? 'highlighted' : '';
+
+                return `
+                    <div class="hash-entry ${className}">
+                        <span class="hash-value">${hash}</span>
+                        <span class="count-badge ${isLoopDetected ? 'danger' : isWarning ? 'warning' : ''}">
+                            ${count}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 更新滑动窗口显示
+        function updateWindowDisplay() {
+            const windowEl = document.getElementById('windowContent');
+            const lengthEl = document.getElementById('windowLength');
+            const truncationEl = document.getElementById('truncationInfo');
+
+            lengthEl.textContent = contentHistory.length;
+
+            if (contentHistory.length === 0) {
+                windowEl.textContent = '窗口为空，等待内容输入...';
+                truncationEl.style.display = 'none';
+            } else {
+                // 显示最近的内容，如果太长则截断显示
+                const displayContent = contentHistory.length > 500
+                    ? '...' + contentHistory.substring(contentHistory.length - 500)
+                    : contentHistory;
+
+                windowEl.textContent = displayContent;
+
+                if (contentHistory.length >= MAX_WINDOW_SIZE) {
+                    truncationEl.style.display = 'block';
+                } else {
+                    truncationEl.style.display = 'none';
+                }
+            }
+        }
+
+        // 模拟滑动窗口截断
+        function truncateWindow() {
+            if (contentHistory.length <= MAX_WINDOW_SIZE) {
+                return;
+            }
+
+            const truncationAmount = contentHistory.length - MAX_WINDOW_SIZE;
+            contentHistory = contentHistory.substring(truncationAmount);
+
+            // 这里可以添加更复杂的索引更新逻辑
+            console.log(`窗口截断: 删除了 ${truncationAmount} 个字符`);
+        }
+
+        // 分析内容
+        function analyzeContent() {
+            const input = document.getElementById('contentInput');
+            const content = input.value.trim();
+
+            if (!content) {
+                alert('请输入内容！');
+                return;
+            }
+
+            // 添加到历史记录
+            contentHistory += content + ' ';
+
+            // 截断窗口如果需要
+            truncateWindow();
+
+            // 分块处理
+            const chunks = chunkContent(content);
+
+            for (const chunk of chunks) {
+                const hash = simpleHash(chunk);
+
+                // 更新统计
+                hashStats.set(hash, (hashStats.get(hash) || 0) + 1);
+
+                // 添加到可视化
+                addChunkVisualization(chunk, hash, true);
+                contentChunks.push({ chunk, hash });
+            }
+
+            // 更新所有显示
+            updateHashTable();
+            updateWindowDisplay();
+            updateStatus();
+
+            // 清空输入
+            input.value = '';
+        }
+
+        // 演示函数
+        async function runDemo(type) {
+            clearAll();
+
+            const demos = {
+                simple: [
+                    "这是第一条消息。",
+                    "这是第一条消息。",
+                    "这是第一条消息。",
+                    "循环检测应该会触发！"
+                ],
+                gradual: [
+                    "开始输入内容。",
+                    "添加一些不同的文本。",
+                    "开始输入内容。",
+                    "再次添加相同内容。",
+                    "开始输入内容。",
+                    "现在应该检测到循环了！"
+                ],
+                mixed: [
+                    "正常内容A",
+                    "正常内容B",
+                    "重复内容X",
+                    "正常内容C",
+                    "重复内容X",
+                    "正常内容D",
+                    "重复内容X",
+                    "循环检测触发！"
+                ],
+                threshold: [
+                    "测试阈值",
+                    "测试阈值",
+                    "还没到阈值",
+                    "测试阈值",
+                    "现在应该触发了！"
+                ]
+            };
+
+            const demoSteps = demos[type];
+
+            for (let i = 0; i < demoSteps.length; i++) {
+                document.getElementById('contentInput').value = demoSteps[i];
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                analyzeContent();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+
+        // 清空所有
+        function clearAll() {
+            contentHistory = '';
+            contentChunks = [];
+            hashStats = new Map();
+            chunkIndex = 0;
+
+            document.getElementById('contentInput').value = '';
+            document.getElementById('contentChunks').innerHTML = `
+                <div style="text-align: center; color: #7d8590; padding: 20px;">
+                    等待输入内容...
+                </div>
+            `;
+            document.getElementById('hashTable').innerHTML = `
+                <div style="text-align: center; color: #7d8590; padding: 20px;">
+                    暂无统计数据...
+                </div>
+            `;
+
+            updateWindowDisplay();
+            updateStatus();
+        }
+
+        // 初始化
+        updateStatus();
+        updateWindowDisplay();
+    </script>
+</body>
+</html>

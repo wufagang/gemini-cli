@@ -41,36 +41,36 @@
             <div class="badge">leetcode 904 | medium</div>
         </div>
         <div class="section">
-            <h2>Algorithm Theory</h2>
-            <p><strong>Fruit Into Baskets</strong> finds the longest subarray with at most two distinct types. Demonstrates type constraint management and hash map optimization strategies.</p>
+            <h2>算法原理</h2>
+            <p><strong>水果装篮问题</strong>寻找最多包含两种不同类型的最长子数组。展示了类型约束管理和哈希映射优化策略。</p>
             <div class="algorithm-steps">
-                <h3>Algorithm Steps:</h3>
+                <h3>算法步骤：</h3>
                 <ol>
-                    <li><strong>Initialize:</strong> Use sliding window with hash map to track fruit types</li>
-                    <li><strong>Expand Window:</strong> Add fruits while maintaining at most 2 types</li>
-                    <li><strong>Shrink Window:</strong> When exceeding 2 types, shrink from left</li>
-                    <li><strong>Update Maximum:</strong> Track longest valid subarray length</li>
+                    <li><strong>初始化：</strong>使用滑动窗口结合哈希映射跟踪水果类型</li>
+                    <li><strong>扩展窗口：</strong>在保持最多2种类型的前提下添加水果</li>
+                    <li><strong>收缩窗口：</strong>当超过2种类型时，从左侧收缩</li>
+                    <li><strong>更新最大值：</strong>跟踪最长有效子数组长度</li>
                 </ol>
             </div>
         </div>
         <div class="section">
-            <h2>Interactive Demo</h2>
+            <h2>交互演示</h2>
             <div class="controls">
                 <div class="input-group">
-                    <label for="fruitsInput">Fruits Array:</label>
-                    <input type="text" id="fruitsInput" value="1,2,1,2,3,1,1" placeholder="Enter comma-separated fruit types">
+                    <label for="fruitsInput">水果数组：</label>
+                    <input type="text" id="fruitsInput" value="1,2,1,2,3,1,1" placeholder="输入逗号分隔的水果类型">
                 </div>
-                <button id="startBtn">Start Demo</button>
-                <button id="stepBtn" disabled>Next Step</button>
-                <button id="autoBtn" disabled>Auto Play</button>
-                <button id="resetBtn" disabled>Reset</button>
+                <button id="startBtn">开始演示</button>
+                <button id="stepBtn" disabled>下一步</button>
+                <button id="autoBtn" disabled>自动播放</button>
+                <button id="resetBtn" disabled>重置</button>
             </div>
             <div class="visualization">
-                <div id="statusDisplay" class="status-display">Click "Start Demo" to launch algorithm visualization</div>
+                <div id="statusDisplay" class="status-display">点击"开始演示"启动算法可视化</div>
             </div>
         </div>
         <div class="section">
-            <h2>Code Implementation</h2>
+            <h2>代码实现</h2>
             <div class="code-example">
                 <pre><code>function totalFruit(fruits) {
     const fruitCount = new Map();
@@ -101,7 +101,7 @@
         </div>
     </div>
     <script>
-        const visualizer = { startDemo() { document.getElementById('statusDisplay').textContent = 'Demo functionality implemented with dark theme styling'; } };
+        const visualizer = { startDemo() { document.getElementById('statusDisplay').textContent = '演示功能已实现，采用深色科技主题风格'; } };
         document.getElementById('startBtn').addEventListener('click', () => visualizer.startDemo());
     </script>
 </body>

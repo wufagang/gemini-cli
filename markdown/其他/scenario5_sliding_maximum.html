@@ -184,6 +184,18 @@
             animation: highlight 1s ease-in-out;
         }
 
+        .num-box.current {
+            background: #1e1b4b;
+            border-color: #6366f1;
+            animation: pulse 1s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1.05); }
+        }
+
         .num-box .index {
             position: absolute;
             bottom: -18px;
@@ -204,6 +216,74 @@
             color: #fafafa;
             margin-bottom: 15px;
             font-weight: 500;
+        }
+
+        .window-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #27272a;
+            border-radius: 2px;
+            border: 1px solid #3f3f46;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .info-item {
+            font-weight: 500;
+            color: #fafafa;
+            font-family: 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+
+        .info-item span:last-child {
+            color: #22c55e;
+            margin-left: 8px;
+        }
+
+        .result-display {
+            margin: 20px 0;
+            padding: 20px;
+            background: #18181b;
+            border: 1px solid #3f3f46;
+            border-radius: 2px;
+        }
+
+        .result-display h3 {
+            color: #fafafa;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .result-display #resultArray {
+            font-family: 'Monaco', monospace;
+            font-size: 1.1em;
+            color: #22c55e;
+            background: #27272a;
+            padding: 10px 15px;
+            border-radius: 2px;
+            border: 1px solid #3f3f46;
+        }
+
+        .step-explanation {
+            margin: 20px 0;
+            padding: 20px;
+            background: #18181b;
+            border: 1px solid #3f3f46;
+            border-radius: 2px;
+        }
+
+        .step-explanation h3 {
+            color: #fafafa;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .step-explanation p {
+            color: #a1a1aa;
+            line-height: 1.6;
         }
 
         .status-display {
@@ -298,59 +378,88 @@
 
         <!-- Algorithm Theory Section -->
         <div class="section">
-            <h2>Algorithm Theory</h2>
-            <p><strong>Sliding Window Maximum</strong> uses a monotonic deque to efficiently solve sliding window maximum problems, demonstrating the power of deque data structure and optimization techniques.</p>
+            <h2>算法原理</h2>
+            <p><strong>滑动窗口最大值</strong>使用单调递减双端队列高效解决滑动窗口最大值问题，展示了双端队列数据结构和优化技术的强大威力。</p>
 
             <div class="algorithm-steps">
-                <h3>Algorithm Steps:</h3>
+                <h3>算法步骤：</h3>
                 <ol>
-                    <li><strong>Initialize:</strong> Create monotonic decreasing deque to store indices</li>
-                    <li><strong>Process Elements:</strong> For each element, maintain deque monotonic property</li>
-                    <li><strong>Remove Invalid:</strong> Remove indices outside current window</li>
-                    <li><strong>Maintain Order:</strong> Remove smaller elements from rear</li>
-                    <li><strong>Record Maximum:</strong> Front of deque contains current window maximum</li>
+                    <li><strong>初始化：</strong>创建单调递减双端队列存储索引</li>
+                    <li><strong>处理元素：</strong>对每个元素，维护队列的单调性质</li>
+                    <li><strong>移除无效：</strong>移除超出当前窗口范围的索引</li>
+                    <li><strong>维护顺序：</strong>从队尾移除较小的元素</li>
+                    <li><strong>记录最大值：</strong>队首包含当前窗口的最大值</li>
                 </ol>
             </div>
         </div>
 
         <!-- Interactive Demo Section -->
         <div class="section">
-            <h2>Interactive Demo</h2>
+            <h2>交互演示</h2>
 
             <div class="controls">
                 <div class="input-group">
-                    <label for="arrayInput">Array:</label>
-                    <input type="text" id="arrayInput" value="1,3,-1,-3,5,3,6,7" placeholder="Enter comma-separated numbers">
+                    <label for="arrayInput">数组：</label>
+                    <input type="text" id="arrayInput" value="1,3,-1,-3,5,3,6,7" placeholder="输入逗号分隔的数字">
                 </div>
 
                 <div class="input-group">
-                    <label for="windowSizeInput">Window Size:</label>
-                    <input type="number" id="windowSizeInput" value="3" min="1" placeholder="Enter window size">
+                    <label for="windowSizeInput">窗口大小：</label>
+                    <input type="number" id="windowSizeInput" value="3" min="1" placeholder="输入窗口大小">
                 </div>
 
-                <button id="startBtn">Start Demo</button>
-                <button id="stepBtn" disabled>Next Step</button>
-                <button id="autoBtn" disabled>Auto Play</button>
-                <button id="resetBtn" disabled>Reset</button>
+                <button id="startBtn">开始演示</button>
+                <button id="stepBtn" disabled>下一步</button>
+                <button id="autoBtn" disabled>自动播放</button>
+                <button id="resetBtn" disabled>重置</button>
             </div>
 
             <div class="visualization">
                 <div id="arrayDisplay" class="array-display"></div>
 
                 <div class="deque-display">
-                    <h3>Monotonic Deque State</h3>
-                    <div id="dequeState">Deque will be shown here</div>
+                    <h3>单调双端队列状态</h3>
+                    <div id="dequeState">双端队列状态将在这里显示</div>
+                </div>
+
+                <div class="window-info">
+                    <div class="info-item">
+                        <span>当前位置：</span>
+                        <span id="currentIndex">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span>窗口范围：</span>
+                        <span id="windowRange">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span>窗口最大值：</span>
+                        <span id="windowMax">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span>当前步骤：</span>
+                        <span id="currentStep">0</span>
+                    </div>
+                </div>
+
+                <div class="result-display">
+                    <h3>结果数组</h3>
+                    <div id="resultArray">[等待开始...]</div>
                 </div>
 
                 <div id="statusDisplay" class="status-display">
-                    Click "Start Demo" to launch algorithm visualization
+                    点击"开始演示"启动算法可视化
+                </div>
+
+                <div id="stepExplanation" class="step-explanation" style="display: none;">
+                    <h3>当前步骤说明</h3>
+                    <p id="explanationText"></p>
                 </div>
             </div>
         </div>
 
         <!-- Code Implementation Section -->
         <div class="section">
-            <h2>Code Implementation</h2>
+            <h2>代码实现</h2>
             <div class="code-example">
                 <pre><code>function maxSlidingWindow(nums, k) {
     const result = [];
@@ -383,15 +492,352 @@
     </div>
 
     <script>
-        // Basic implementation for demo functionality
-        const visualizer = {
-            startDemo() {
-                document.getElementById('statusDisplay').textContent = 'Demo functionality implemented with dark theme styling';
-                document.getElementById('dequeState').textContent = 'Deque: [indices will be shown here]';
-            }
-        };
+        class SlidingWindowMaxVisualizer {
+            constructor() {
+                this.nums = [];
+                this.windowSize = 3;
+                this.steps = [];
+                this.currentStepIndex = 0;
+                this.isPlaying = false;
+                this.autoInterval = null;
 
-        document.getElementById('startBtn').addEventListener('click', () => visualizer.startDemo());
+                this.initializeElements();
+                this.bindEvents();
+            }
+
+            initializeElements() {
+                this.arrayInput = document.getElementById('arrayInput');
+                this.windowSizeInput = document.getElementById('windowSizeInput');
+                this.startBtn = document.getElementById('startBtn');
+                this.stepBtn = document.getElementById('stepBtn');
+                this.autoBtn = document.getElementById('autoBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+
+                this.arrayDisplay = document.getElementById('arrayDisplay');
+                this.dequeState = document.getElementById('dequeState');
+                this.currentIndexSpan = document.getElementById('currentIndex');
+                this.windowRangeSpan = document.getElementById('windowRange');
+                this.windowMaxSpan = document.getElementById('windowMax');
+                this.currentStepSpan = document.getElementById('currentStep');
+                this.resultArray = document.getElementById('resultArray');
+                this.statusDisplay = document.getElementById('statusDisplay');
+                this.stepExplanation = document.getElementById('stepExplanation');
+                this.explanationText = document.getElementById('explanationText');
+            }
+
+            bindEvents() {
+                this.startBtn.addEventListener('click', () => this.startDemo());
+                this.stepBtn.addEventListener('click', () => this.nextStep());
+                this.autoBtn.addEventListener('click', () => this.toggleAutoPlay());
+                this.resetBtn.addEventListener('click', () => this.reset());
+
+                this.arrayInput.addEventListener('input', () => this.reset());
+                this.windowSizeInput.addEventListener('input', () => this.reset());
+            }
+
+            startDemo() {
+                const arrayStr = this.arrayInput.value.trim();
+                this.windowSize = parseInt(this.windowSizeInput.value) || 3;
+
+                if (!arrayStr) {
+                    alert('请输入有效的数组');
+                    return;
+                }
+
+                this.nums = arrayStr.split(',').map(num => parseInt(num.trim())).filter(num => !isNaN(num));
+
+                if (this.nums.length === 0) {
+                    alert('请输入有效的数字数组');
+                    return;
+                }
+
+                if (this.windowSize > this.nums.length) {
+                    alert('窗口大小不能大于数组长度');
+                    return;
+                }
+
+                this.generateSteps();
+                this.renderArray();
+                this.updateButtons('demo');
+                this.currentStepIndex = 0;
+                this.showStep(0);
+            }
+
+            generateSteps() {
+                this.steps = [];
+                const result = [];
+                const deque = [];
+
+                // 初始步骤
+                this.steps.push({
+                    type: 'init',
+                    index: -1,
+                    deque: [],
+                    result: [],
+                    windowStart: -1,
+                    windowEnd: -1,
+                    windowMax: null,
+                    explanation: `初始化：准备使用单调双端队列处理滑动窗口最大值问题，数组长度${this.nums.length}，窗口大小${this.windowSize}`
+                });
+
+                for (let i = 0; i < this.nums.length; i++) {
+                    // 移除超出窗口范围的索引
+                    while (deque.length > 0 && deque[0] < i - this.windowSize + 1) {
+                        const removedIndex = deque.shift();
+                        this.steps.push({
+                            type: 'remove_out_of_window',
+                            index: i,
+                            deque: [...deque],
+                            result: [...result],
+                            windowStart: Math.max(0, i - this.windowSize + 1),
+                            windowEnd: i,
+                            removedIndex: removedIndex,
+                            windowMax: deque.length > 0 ? this.nums[deque[0]] : null,
+                            explanation: `移除超出窗口范围的索引 ${removedIndex}（值：${this.nums[removedIndex]}），因为它已经不在当前窗口 [${Math.max(0, i - this.windowSize + 1)}, ${i}] 内`
+                        });
+                    }
+
+                    // 移除队尾比当前元素小的索引
+                    while (deque.length > 0 && this.nums[deque[deque.length - 1]] < this.nums[i]) {
+                        const removedIndex = deque.pop();
+                        this.steps.push({
+                            type: 'remove_smaller',
+                            index: i,
+                            deque: [...deque],
+                            result: [...result],
+                            windowStart: Math.max(0, i - this.windowSize + 1),
+                            windowEnd: i,
+                            removedIndex: removedIndex,
+                            currentValue: this.nums[i],
+                            windowMax: deque.length > 0 ? this.nums[deque[0]] : null,
+                            explanation: `从队尾移除索引 ${removedIndex}（值：${this.nums[removedIndex]}），因为它比当前元素 ${this.nums[i]} 小，在单调递减队列中不再有用`
+                        });
+                    }
+
+                    // 添加当前索引
+                    deque.push(i);
+                    this.steps.push({
+                        type: 'add_current',
+                        index: i,
+                        deque: [...deque],
+                        result: [...result],
+                        windowStart: Math.max(0, i - this.windowSize + 1),
+                        windowEnd: i,
+                        currentValue: this.nums[i],
+                        windowMax: this.nums[deque[0]],
+                        explanation: `将当前索引 ${i}（值：${this.nums[i]}）添加到双端队列尾部`
+                    });
+
+                    // 如果窗口完整，记录最大值
+                    if (i >= this.windowSize - 1) {
+                        const maxValue = this.nums[deque[0]];
+                        result.push(maxValue);
+                        this.steps.push({
+                            type: 'record_max',
+                            index: i,
+                            deque: [...deque],
+                            result: [...result],
+                            windowStart: i - this.windowSize + 1,
+                            windowEnd: i,
+                            windowMax: maxValue,
+                            explanation: `窗口 [${i - this.windowSize + 1}, ${i}] 完整，记录最大值 ${maxValue}（索引 ${deque[0]}）到结果数组`
+                        });
+                    }
+                }
+
+                // 最终结果
+                this.steps.push({
+                    type: 'final',
+                    index: this.nums.length,
+                    deque: [],
+                    result: [...result],
+                    windowStart: -1,
+                    windowEnd: -1,
+                    windowMax: null,
+                    explanation: `算法完成！滑动窗口最大值数组：[${result.join(', ')}]`
+                });
+
+                this.finalResult = result;
+            }
+
+            renderArray() {
+                this.arrayDisplay.innerHTML = '';
+                for (let i = 0; i < this.nums.length; i++) {
+                    const numBox = document.createElement('div');
+                    numBox.className = 'num-box';
+                    numBox.textContent = this.nums[i];
+
+                    const index = document.createElement('div');
+                    index.className = 'index';
+                    index.textContent = i;
+                    numBox.appendChild(index);
+
+                    this.arrayDisplay.appendChild(numBox);
+                }
+            }
+
+            showStep(stepIndex) {
+                if (stepIndex >= this.steps.length) {
+                    this.endDemo();
+                    return;
+                }
+
+                const step = this.steps[stepIndex];
+                const numBoxes = this.arrayDisplay.querySelectorAll('.num-box');
+
+                // 清除所有样式
+                numBoxes.forEach(box => {
+                    box.classList.remove('in-window', 'maximum', 'current');
+                });
+
+                // 高亮当前窗口
+                if (step.windowStart >= 0 && step.windowEnd >= 0) {
+                    for (let i = step.windowStart; i <= step.windowEnd; i++) {
+                        if (i < numBoxes.length) {
+                            numBoxes[i].classList.add('in-window');
+                        }
+                    }
+                }
+
+                // 高亮当前处理的元素
+                if (step.index >= 0 && step.index < numBoxes.length) {
+                    numBoxes[step.index].classList.add('current');
+                }
+
+                // 高亮最大值元素
+                if (step.deque.length > 0 && step.deque[0] < numBoxes.length) {
+                    numBoxes[step.deque[0]].classList.add('maximum');
+                }
+
+                // 更新双端队列显示
+                this.updateDequeDisplay(step.deque);
+
+                // 更新信息显示
+                this.currentIndexSpan.textContent = step.index >= 0 ? step.index : '-';
+                this.windowRangeSpan.textContent = step.windowStart >= 0 ?
+                    `[${step.windowStart}, ${step.windowEnd}]` : '-';
+                this.windowMaxSpan.textContent = step.windowMax !== null ? step.windowMax : '-';
+                this.currentStepSpan.textContent = stepIndex + 1;
+
+                // 更新结果数组显示
+                this.resultArray.textContent = step.result.length > 0 ?
+                    `[${step.result.join(', ')}]` : '[等待结果...]';
+
+                // 更新状态显示
+                let statusText = '正在处理滑动窗口...';
+                if (step.type === 'init') {
+                    statusText = '算法初始化完成';
+                } else if (step.type === 'final') {
+                    statusText = '算法执行完成！';
+                } else if (step.type === 'record_max') {
+                    statusText = `找到窗口最大值：${step.windowMax}`;
+                }
+
+                this.statusDisplay.textContent = statusText;
+
+                // 显示步骤说明
+                this.stepExplanation.style.display = 'block';
+                this.explanationText.textContent = step.explanation;
+
+                this.currentStepIndex = stepIndex;
+            }
+
+            updateDequeDisplay(deque) {
+                if (deque.length === 0) {
+                    this.dequeState.textContent = '双端队列：[ 空 ]';
+                    return;
+                }
+
+                const dequeContent = deque.map(index => `${index}(${this.nums[index]})`).join(', ');
+                this.dequeState.innerHTML = `双端队列：<span style="color: #22c55e;">[${dequeContent}]</span>`;
+            }
+
+            nextStep() {
+                if (this.currentStepIndex < this.steps.length - 1) {
+                    this.showStep(this.currentStepIndex + 1);
+                } else {
+                    this.endDemo();
+                }
+            }
+
+            toggleAutoPlay() {
+                if (this.isPlaying) {
+                    this.stopAutoPlay();
+                } else {
+                    this.startAutoPlay();
+                }
+            }
+
+            startAutoPlay() {
+                this.isPlaying = true;
+                this.autoBtn.textContent = '暂停';
+                this.stepBtn.disabled = true;
+
+                this.autoInterval = setInterval(() => {
+                    if (this.currentStepIndex < this.steps.length - 1) {
+                        this.nextStep();
+                    } else {
+                        this.stopAutoPlay();
+                        this.endDemo();
+                    }
+                }, 1500);
+            }
+
+            stopAutoPlay() {
+                this.isPlaying = false;
+                this.autoBtn.textContent = '自动播放';
+                this.stepBtn.disabled = false;
+
+                if (this.autoInterval) {
+                    clearInterval(this.autoInterval);
+                    this.autoInterval = null;
+                }
+            }
+
+            endDemo() {
+                this.stopAutoPlay();
+                this.stepBtn.disabled = true;
+                this.autoBtn.disabled = true;
+            }
+
+            reset() {
+                this.stopAutoPlay();
+                this.steps = [];
+                this.currentStepIndex = 0;
+
+                this.arrayDisplay.innerHTML = '';
+                this.dequeState.textContent = '双端队列状态将在这里显示';
+                this.currentIndexSpan.textContent = '-';
+                this.windowRangeSpan.textContent = '-';
+                this.windowMaxSpan.textContent = '-';
+                this.currentStepSpan.textContent = '0';
+                this.resultArray.textContent = '[等待开始...]';
+                this.statusDisplay.textContent = '点击"开始演示"启动算法可视化';
+                this.stepExplanation.style.display = 'none';
+
+                this.updateButtons('initial');
+            }
+
+            updateButtons(state) {
+                switch (state) {
+                    case 'initial':
+                        this.startBtn.disabled = false;
+                        this.stepBtn.disabled = true;
+                        this.autoBtn.disabled = true;
+                        this.resetBtn.disabled = true;
+                        break;
+                    case 'demo':
+                        this.startBtn.disabled = true;
+                        this.stepBtn.disabled = false;
+                        this.autoBtn.disabled = false;
+                        this.resetBtn.disabled = false;
+                        break;
+                }
+            }
+        }
+
+        // 初始化可视化器
+        const visualizer = new SlidingWindowMaxVisualizer();
     </script>
 </body>
 </html>

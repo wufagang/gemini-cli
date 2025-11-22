@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fixed Window Duplicate Detection - Sliding Window Algorithm</title>
+    <title>固定窗口重复检测 - 滑动窗口算法</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #e4e4e7; background: #0a0a0b; min-height: 100vh; }
@@ -45,62 +45,62 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Fixed Window Duplicate Detection</h1>
-            <p>Fixed window size sliding window algorithm for detecting duplicate characters</p>
+            <h1>固定窗口重复检测</h1>
+            <p>固定窗口大小滑动窗口算法用于检测重复字符</p>
             <div class="badge">foundation | easy</div>
         </div>
         <div class="section">
-            <h2>Algorithm Theory</h2>
-            <p><strong>Fixed Window Duplicate Detection</strong> checks for duplicate characters within a fixed-length window. This is the foundational concept demonstrating basic sliding window principles.</p>
+            <h2>算法原理</h2>
+            <p><strong>固定窗口重复检测</strong>在固定长度窗口内检查重复字符。这是展示滑动窗口基本原理的基础概念。</p>
             <div class="algorithm-steps">
-                <h3>Algorithm Steps:</h3>
+                <h3>算法步骤：</h3>
                 <ol>
-                    <li><strong>Initialize:</strong> Set window size and starting position</li>
-                    <li><strong>Check Window:</strong> Examine characters within current window</li>
-                    <li><strong>Detect Duplicates:</strong> Use hash set to find repeated characters</li>
-                    <li><strong>Slide Window:</strong> Move window one position right</li>
-                    <li><strong>Repeat:</strong> Continue until reaching string end</li>
+                    <li><strong>初始化：</strong>设置窗口大小和起始位置</li>
+                    <li><strong>检查窗口：</strong>检查当前窗口内的字符</li>
+                    <li><strong>检测重复：</strong>使用哈希集合找到重复字符</li>
+                    <li><strong>滑动窗口：</strong>将窗口向右移动一个位置</li>
+                    <li><strong>重复执行：</strong>继续直到到达字符串末尾</li>
                 </ol>
             </div>
         </div>
         <div class="section">
-            <h2>Interactive Demo</h2>
+            <h2>交互演示</h2>
             <div class="controls">
                 <div class="input-group">
-                    <label for="stringInput">String:</label>
-                    <input type="text" id="stringInput" value="abccba" placeholder="Enter string to analyze">
+                    <label for="stringInput">字符串：</label>
+                    <input type="text" id="stringInput" value="abccba" placeholder="输入要分析的字符串">
                 </div>
                 <div class="input-group">
-                    <label for="windowSizeInput">Window Size:</label>
-                    <input type="number" id="windowSizeInput" value="3" min="1" placeholder="Enter window size">
+                    <label for="windowSizeInput">窗口大小：</label>
+                    <input type="number" id="windowSizeInput" value="3" min="1" placeholder="输入窗口大小">
                 </div>
-                <button id="startBtn">Start Demo</button>
-                <button id="stepBtn" disabled>Next Step</button>
-                <button id="autoBtn" disabled>Auto Play</button>
-                <button id="resetBtn" disabled>Reset</button>
+                <button id="startBtn">开始演示</button>
+                <button id="stepBtn" disabled>下一步</button>
+                <button id="autoBtn" disabled>自动播放</button>
+                <button id="resetBtn" disabled>重置</button>
             </div>
             <div class="visualization">
                 <div id="stringDisplay" class="string-display"></div>
                 <div class="window-info">
-                    <h3>Window Analysis</h3>
+                    <h3>窗口分析</h3>
                     <div class="info-item">
-                        <span>Window Position:</span>
+                        <span>窗口位置：</span>
                         <span id="windowPosition">-</span>
                     </div>
                     <div class="info-item">
-                        <span>Window Content:</span>
+                        <span>窗口内容：</span>
                         <span id="windowContent">-</span>
                     </div>
                     <div class="info-item">
-                        <span>Has Duplicates:</span>
+                        <span>是否有重复：</span>
                         <span id="hasDuplicates">-</span>
                     </div>
                 </div>
-                <div id="statusDisplay" class="status-display">Click "Start Demo" to launch algorithm visualization</div>
+                <div id="statusDisplay" class="status-display">点击"开始演示"启动算法可视化</div>
             </div>
         </div>
         <div class="section">
-            <h2>Code Implementation</h2>
+            <h2>代码实现</h2>
             <div class="code-example">
                 <pre><code>function hasFixedWindowDuplicates(str, windowSize) {
     const results = [];
@@ -133,10 +133,10 @@
     <script>
         const visualizer = {
             startDemo() {
-                document.getElementById('statusDisplay').textContent = 'Demo functionality implemented with dark theme styling';
+                document.getElementById('statusDisplay').textContent = '演示功能已实现，采用深色科技主题风格';
                 document.getElementById('windowPosition').textContent = '0-2';
                 document.getElementById('windowContent').textContent = 'abc';
-                document.getElementById('hasDuplicates').textContent = 'false';
+                document.getElementById('hasDuplicates').textContent = '否';
             }
         };
         document.getElementById('startBtn').addEventListener('click', () => visualizer.startDemo());

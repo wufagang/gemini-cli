@@ -45,59 +45,59 @@
             <div class="badge">leetcode 121 | easy</div>
         </div>
         <div class="section">
-            <h2>Algorithm Theory</h2>
-            <p><strong>Best Time to Buy and Sell Stock</strong> demonstrates sliding window core principles. Includes complete visualization with stock price charts and profit analysis.</p>
+            <h2>算法原理</h2>
+            <p><strong>买卖股票的最佳时机</strong>体现了滑动窗口核心原理的单次遍历动态规划。包含完整的股价图表可视化和利润分析。</p>
             <div class="algorithm-steps">
-                <h3>Algorithm Steps:</h3>
+                <h3>算法步骤：</h3>
                 <ol>
-                    <li><strong>Initialize:</strong> Track minimum price and maximum profit</li>
-                    <li><strong>Iterate Prices:</strong> Process each day's stock price</li>
-                    <li><strong>Update Minimum:</strong> Keep track of lowest price seen so far</li>
-                    <li><strong>Calculate Profit:</strong> Compute profit if selling at current price</li>
-                    <li><strong>Update Maximum:</strong> Track best profit opportunity</li>
+                    <li><strong>初始化：</strong>跟踪最低价格和最大利润</li>
+                    <li><strong>遍历价格：</strong>处理每日的股票价格</li>
+                    <li><strong>更新最低价：</strong>记录迄今为止见过的最低价格</li>
+                    <li><strong>计算利润：</strong>计算按当前价格卖出的利润</li>
+                    <li><strong>更新最大值：</strong>跟踪最佳利润机会</li>
                 </ol>
             </div>
         </div>
         <div class="section">
-            <h2>Interactive Demo</h2>
+            <h2>交互演示</h2>
             <div class="controls">
                 <div class="input-group">
-                    <label for="pricesInput">Stock Prices:</label>
-                    <input type="text" id="pricesInput" value="7,1,5,3,6,4" placeholder="Enter comma-separated prices">
+                    <label for="pricesInput">股票价格：</label>
+                    <input type="text" id="pricesInput" value="7,1,5,3,6,4" placeholder="输入逗号分隔的价格">
                 </div>
-                <button id="startBtn">Start Demo</button>
-                <button id="stepBtn" disabled>Next Step</button>
-                <button id="autoBtn" disabled>Auto Play</button>
-                <button id="resetBtn" disabled>Reset</button>
+                <button id="startBtn">开始演示</button>
+                <button id="stepBtn" disabled>下一步</button>
+                <button id="autoBtn" disabled>自动播放</button>
+                <button id="resetBtn" disabled>重置</button>
             </div>
             <div class="visualization">
                 <div class="chart-container">
                     <canvas id="stockChart" width="800" height="300"></canvas>
                 </div>
                 <div class="profit-display">
-                    <h3>Trading Analysis</h3>
+                    <h3>交易分析</h3>
                     <div class="profit-item">
-                        <span>Current Min Price:</span>
+                        <span>当前最低价格：</span>
                         <span id="minPrice">-</span>
                     </div>
                     <div class="profit-item">
-                        <span>Current Price:</span>
+                        <span>当前价格：</span>
                         <span id="currentPrice">-</span>
                     </div>
                     <div class="profit-item">
-                        <span>Current Profit:</span>
+                        <span>当前利润：</span>
                         <span id="currentProfit">-</span>
                     </div>
                     <div class="profit-item">
-                        <span>Max Profit:</span>
+                        <span>最大利润：</span>
                         <span id="maxProfit">-</span>
                     </div>
                 </div>
-                <div id="statusDisplay" class="status-display">Click "Start Demo" to launch algorithm visualization</div>
+                <div id="statusDisplay" class="status-display">点击"开始演示"启动算法可视化</div>
             </div>
         </div>
         <div class="section">
-            <h2>Code Implementation</h2>
+            <h2>代码实现</h2>
             <div class="code-example">
                 <pre><code>function maxProfit(prices) {
     if (prices.length <= 1) return 0;
@@ -125,7 +125,7 @@
     <script>
         const visualizer = {
             startDemo() {
-                document.getElementById('statusDisplay').textContent = 'Demo functionality implemented with dark theme styling';
+                document.getElementById('statusDisplay').textContent = '演示功能已实现，采用深色科技主题风格';
                 document.getElementById('minPrice').textContent = '7';
                 document.getElementById('currentPrice').textContent = '1';
                 document.getElementById('currentProfit').textContent = '0';

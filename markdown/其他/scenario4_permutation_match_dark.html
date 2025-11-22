@@ -289,54 +289,54 @@
 
         <!-- Algorithm Theory Section -->
         <div class="section">
-            <h2>Algorithm Theory</h2>
-            <p><strong>Permutation in String</strong> determines if a string contains any permutation of another string using fixed-size sliding window and character frequency comparison for efficient matching.</p>
+            <h2>算法原理</h2>
+            <p><strong>字符串排列匹配</strong>使用固定大小滑动窗口和字符频次比较，高效确定一个字符串中是否包含另一个字符串的任意排列。</p>
 
             <div class="algorithm-steps">
-                <h3>Algorithm Steps:</h3>
+                <h3>算法步骤：</h3>
                 <ol>
-                    <li><strong>Preprocessing:</strong> Count frequency of each character in pattern string</li>
-                    <li><strong>Initialize:</strong> Create fixed-size window equal to pattern length</li>
-                    <li><strong>Slide Window:</strong> Move window through string, updating character frequencies</li>
-                    <li><strong>Compare Frequencies:</strong> Check if window frequencies match pattern frequencies</li>
-                    <li><strong>Return Result:</strong> Return true if match found, false otherwise</li>
+                    <li><strong>预处理：</strong>统计模式字符串中每个字符的频次</li>
+                    <li><strong>初始化：</strong>创建与模式字符串长度相等的固定大小窗口</li>
+                    <li><strong>滑动窗口：</strong>移动窗口遍历字符串，更新字符频次</li>
+                    <li><strong>比较频次：</strong>检查窗口频次是否与模式频次匹配</li>
+                    <li><strong>返回结果：</strong>找到匹配则返回true，否则返回false</li>
                 </ol>
             </div>
         </div>
 
         <!-- Interactive Demo Section -->
         <div class="section">
-            <h2>Interactive Demo</h2>
+            <h2>交互演示</h2>
 
             <div class="controls">
                 <div class="input-group">
-                    <label for="stringInput">String:</label>
-                    <input type="text" id="stringInput" value="eidbaooo" placeholder="Enter string">
+                    <label for="stringInput">字符串：</label>
+                    <input type="text" id="stringInput" value="eidbaooo" placeholder="输入字符串">
                 </div>
 
                 <div class="input-group">
-                    <label for="patternInput">Pattern:</label>
-                    <input type="text" id="patternInput" value="ab" placeholder="Enter pattern">
+                    <label for="patternInput">模式：</label>
+                    <input type="text" id="patternInput" value="ab" placeholder="输入模式">
                 </div>
 
-                <button id="startBtn">Start Demo</button>
-                <button id="stepBtn" disabled>Next Step</button>
-                <button id="autoBtn" disabled>Auto Play</button>
-                <button id="resetBtn" disabled>Reset</button>
+                <button id="startBtn">开始演示</button>
+                <button id="stepBtn" disabled>下一步</button>
+                <button id="autoBtn" disabled>自动播放</button>
+                <button id="resetBtn" disabled>重置</button>
             </div>
 
             <div class="visualization">
                 <div id="stringDisplay" class="string-display"></div>
 
                 <div id="statusDisplay" class="status-display">
-                    Click "Start Demo" to launch algorithm visualization
+                    点击"开始演示"启动算法可视化
                 </div>
             </div>
         </div>
 
         <!-- Code Implementation Section -->
         <div class="section">
-            <h2>Code Implementation</h2>
+            <h2>代码实现</h2>
             <div class="code-example">
                 <pre><code>function checkInclusion(s1, s2) {
     if (s1.length > s2.length) return false;
@@ -396,10 +396,10 @@ function matches(count1, count2) {
     </div>
 
     <script>
-        // Basic implementation for demo functionality
+        // 演示功能的基本实现
         const visualizer = {
             startDemo() {
-                document.getElementById('statusDisplay').textContent = 'Demo functionality implemented with dark theme styling';
+                document.getElementById('statusDisplay').textContent = '演示功能已实现，采用深色科技主题风格';
             }
         };
 

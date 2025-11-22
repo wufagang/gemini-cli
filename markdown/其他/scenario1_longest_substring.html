@@ -436,49 +436,49 @@
 
         <!-- Algorithm Theory Section -->
         <div class="section theory-section">
-            <h2>Algorithm Theory</h2>
-            <p><strong>Longest Substring Without Repeating Characters</strong> is a classic application of the sliding window algorithm. It uses two pointers to maintain a window without duplicate characters, dynamically adjusting the window size to find the longest substring.</p>
+            <h2>算法原理</h2>
+            <p><strong>无重复字符的最长子串</strong>是滑动窗口算法的经典应用。使用两个指针维护一个无重复字符的窗口，动态调整窗口大小来寻找最长子串。</p>
 
             <div class="algorithm-steps">
-                <h3>Algorithm Steps:</h3>
+                <h3>算法步骤：</h3>
                 <ol>
-                    <li><strong>Initialize:</strong> Both left and right pointers start at the beginning, create a character set to track window characters</li>
-                    <li><strong>Expand Window:</strong> Move right pointer forward, add new character to window</li>
-                    <li><strong>Check Duplicates:</strong> If new character exists in window, duplicate found</li>
-                    <li><strong>Shrink Window:</strong> When duplicate occurs, move left pointer right until no duplicates</li>
-                    <li><strong>Record Maximum:</strong> Update longest substring length and position after each expansion</li>
-                    <li><strong>Continue:</strong> Repeat steps 2-5 until right pointer reaches string end</li>
+                    <li><strong>初始化：</strong>左右指针都从起始位置开始，创建字符集合记录窗口内字符</li>
+                    <li><strong>扩展窗口：</strong>右指针向前移动，将新字符加入窗口</li>
+                    <li><strong>检查重复：</strong>如果新字符在窗口中存在，则发现重复</li>
+                    <li><strong>收缩窗口：</strong>当出现重复时，左指针右移直到无重复字符</li>
+                    <li><strong>记录最大值：</strong>每次扩展后更新最长子串长度和位置</li>
+                    <li><strong>继续执行：</strong>重复步骤2-5直到右指针到达字符串末尾</li>
                 </ol>
             </div>
 
             <div class="complexity-info">
                 <div class="complexity-card">
-                    <h4>Time Complexity</h4>
-                    <p><strong>O(n)</strong> - where n is string length</p>
-                    <p>Each character visited at most twice (add and remove)</p>
+                    <h4>时间复杂度</h4>
+                    <p><strong>O(n)</strong> - n为字符串长度</p>
+                    <p>每个字符最多访问两次（添加和删除）</p>
                 </div>
                 <div class="complexity-card">
-                    <h4>Space Complexity</h4>
-                    <p><strong>O(min(m,n))</strong> - where m is character set size</p>
-                    <p>Additional set needed to store window characters</p>
+                    <h4>空间复杂度</h4>
+                    <p><strong>O(min(m,n))</strong> - m为字符集大小</p>
+                    <p>需要额外的集合存储窗口内字符</p>
                 </div>
             </div>
         </div>
 
         <!-- Interactive Demo Section -->
         <div class="section demo-section">
-            <h2>Interactive Demo</h2>
+            <h2>交互演示</h2>
 
             <div class="controls">
                 <div class="input-group">
-                    <label for="stringInput">Test String:</label>
-                    <input type="text" id="stringInput" value="abcabcbb" placeholder="Enter test string">
+                    <label for="stringInput">测试字符串：</label>
+                    <input type="text" id="stringInput" value="abcabcbb" placeholder="输入测试字符串">
                 </div>
 
-                <button id="startBtn">Start Demo</button>
-                <button id="stepBtn" disabled>Next Step</button>
-                <button id="autoBtn" disabled>Auto Play</button>
-                <button id="resetBtn" disabled>Reset</button>
+                <button id="startBtn">开始演示</button>
+                <button id="stepBtn" disabled>下一步</button>
+                <button id="autoBtn" disabled>自动播放</button>
+                <button id="resetBtn" disabled>重置</button>
             </div>
 
             <!-- Visualization Area -->
@@ -487,34 +487,34 @@
 
                 <div class="pointers-info">
                     <div class="pointer-stat">
-                        <span>Left Pointer: </span>
+                        <span>左指针：</span>
                         <span id="leftPointer">-</span>
                     </div>
                     <div class="pointer-stat">
-                        <span>Right Pointer: </span>
+                        <span>右指针：</span>
                         <span id="rightPointer">-</span>
                     </div>
                     <div class="pointer-stat">
-                        <span>Current Length: </span>
+                        <span>当前长度：</span>
                         <span id="currentLength">0</span>
                     </div>
                     <div class="pointer-stat">
-                        <span>Current Step: </span>
+                        <span>当前步骤：</span>
                         <span id="currentStep">0</span>
                     </div>
                 </div>
 
                 <div id="statusDisplay" class="status-display status-waiting">
-                    Click "Start Demo" to launch algorithm visualization
+                    点击"开始演示"启动算法可视化
                 </div>
 
                 <div id="stepExplanation" class="step-explanation" style="display: none;">
-                    <h3>Current Step Explanation</h3>
+                    <h3>当前步骤说明</h3>
                     <p id="explanationText"></p>
                 </div>
 
                 <div id="resultDisplay" class="result-display" style="display: none;">
-                    <h3>Final Result</h3>
+                    <h3>最终结果</h3>
                     <div class="result-text" id="resultText"></div>
                 </div>
             </div>
@@ -522,7 +522,7 @@
 
         <!-- Code Implementation Section -->
         <div class="section">
-            <h2>Code Implementation</h2>
+            <h2>代码实现</h2>
             <div class="code-example">
                 <pre><code>function lengthOfLongestSubstring(s) {
     const charSet = new Set();
@@ -605,7 +605,7 @@
                 this.string = this.stringInput.value.trim();
 
                 if (this.string.length === 0) {
-                    alert('Please enter a valid string');
+                    alert('请输入有效的字符串');
                     return;
                 }
 
@@ -636,7 +636,7 @@
                         maxLength: maxLength,
                         maxStart: maxStart,
                         maxEnd: maxEnd,
-                        explanation: `Right pointer moves to position ${right}, trying to add character '${this.string[right]}'`
+                        explanation: `右指针移动到位置 ${right}，尝试添加字符 '${this.string[right]}'`
                     });
 
                     // 检查是否需要收缩左边界
@@ -653,7 +653,7 @@
                             maxLength: maxLength,
                             maxStart: maxStart,
                             maxEnd: maxEnd,
-                            explanation: `Found duplicate character '${this.string[right]}', need to shrink left boundary`
+                            explanation: `发现重复字符 '${this.string[right]}'，需要收缩左边界`
                         });
 
                         // 收缩左边界
@@ -672,7 +672,7 @@
                                 maxLength: maxLength,
                                 maxStart: maxStart,
                                 maxEnd: maxEnd,
-                                explanation: `Left pointer moves to position ${left}, removing character '${this.string[left - 1]}'`
+                                explanation: `左指针移动到位置 ${left}，移除字符 '${this.string[left - 1]}'`
                             });
                         }
                     }
@@ -698,7 +698,7 @@
                         maxLength: maxLength,
                         maxStart: maxStart,
                         maxEnd: maxEnd,
-                        explanation: `Character '${this.string[right]}' added to window, current window length: ${right - left + 1}${right - left + 1 === maxLength ? ' (new maximum record!)' : ''}`
+                        explanation: `字符 '${this.string[right]}' 加入窗口，当前窗口长度：${right - left + 1}${right - left + 1 === maxLength ? ' （新的最大记录！）' : ''}`
                     });
                 }
 
@@ -713,7 +713,7 @@
                     maxLength: maxLength,
                     maxStart: maxStart,
                     maxEnd: maxEnd,
-                    explanation: `Algorithm complete! Longest substring without repeating characters has length ${maxLength}, content: "${this.string.substring(maxStart, maxEnd + 1)}"`
+                    explanation: `算法执行完毕！无重复字符的最长子串长度为 ${maxLength}，内容："${this.string.substring(maxStart, maxEnd + 1)}"`
                 });
 
                 this.finalResult = {
@@ -793,10 +793,10 @@
                 // 更新状态显示
                 if (step.type === 'final_result') {
                     this.statusDisplay.className = 'status-display status-completed';
-                    this.statusDisplay.textContent = 'Algorithm execution complete!';
+                    this.statusDisplay.textContent = '算法执行完成！';
                 } else {
                     this.statusDisplay.className = 'status-display status-processing';
-                    this.statusDisplay.textContent = `Processing - Current max length: ${step.maxLength}`;
+                    this.statusDisplay.textContent = `处理中 - 当前最大长度：${step.maxLength}`;
                 }
 
                 // 显示步骤说明
@@ -809,9 +809,9 @@
             showFinalResult() {
                 this.resultDisplay.style.display = 'block';
                 this.resultText.innerHTML = `
-                    Longest substring without repeating characters: <strong>"${this.finalResult.substring}"</strong><br>
-                    Length: <strong>${this.finalResult.length}</strong><br>
-                    Position: <strong>[${this.finalResult.start}, ${this.finalResult.end}]</strong>
+                    无重复字符的最长子串：<strong>"${this.finalResult.substring}"</strong><br>
+                    长度：<strong>${this.finalResult.length}</strong><br>
+                    位置：<strong>[${this.finalResult.start}, ${this.finalResult.end}]</strong>
                 `;
             }
 
@@ -833,7 +833,7 @@
 
             startAutoPlay() {
                 this.isPlaying = true;
-                this.autoBtn.textContent = 'Pause';
+                this.autoBtn.textContent = '暂停';
                 this.stepBtn.disabled = true;
 
                 this.autoInterval = setInterval(() => {
@@ -848,7 +848,7 @@
 
             stopAutoPlay() {
                 this.isPlaying = false;
-                this.autoBtn.textContent = 'Auto Play';
+                this.autoBtn.textContent = '自动播放';
                 this.stepBtn.disabled = false;
 
                 if (this.autoInterval) {
@@ -874,7 +874,7 @@
                 this.currentLengthSpan.textContent = '0';
                 this.currentStepSpan.textContent = '0';
                 this.statusDisplay.className = 'status-display status-waiting';
-                this.statusDisplay.textContent = 'Click "Start Demo" to launch algorithm visualization';
+                this.statusDisplay.textContent = '点击"开始演示"启动算法可视化';
                 this.stepExplanation.style.display = 'none';
                 this.resultDisplay.style.display = 'none';
 
