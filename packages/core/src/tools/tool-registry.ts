@@ -307,7 +307,7 @@ export class ToolRegistry {
     if (!discoveryCmd) {
       return;
     }
-    debugLogger.log(`执行工具发现命令: ${discoveryCmd}`);
+
     try {
       const cmdParts = parse(discoveryCmd);
       if (cmdParts.length === 0) {

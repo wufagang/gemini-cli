@@ -422,20 +422,16 @@ export const useGeminiStream = (
       }
 
       let localQueryToSendToGemini: PartListUnion | null = null;
-      debugLogger.error('用户输入的内容1: ' + query);
+
       if (typeof query === 'string') {
         const trimmedQuery = query.trim();
         await logger?.logMessage(MessageSenderType.USER, trimmedQuery);
-
-        debugLogger.error('!shellModeActive = ' + !shellModeActive);
 
         if (!shellModeActive) {
           // Handle UI-only commands first
           const slashCommandResult = isSlashCommand(trimmedQuery)
             ? await handleSlashCommand(trimmedQuery)
             : false;
-
-          debugLogger.error('slashCommandResult = ' + slashCommandResult);
 
           if (slashCommandResult) {
             switch (slashCommandResult.type) {
@@ -471,20 +467,11 @@ export const useGeminiStream = (
             }
           }
         }
-        debugLogger.error(
-          '是啥结果： ' + shellModeActive &&
-            handleShellCommand(trimmedQuery, abortSignal),
-        );
+
         if (shellModeActive && handleShellCommand(trimmedQuery, abortSignal)) {
           return { queryToSend: null, shouldProceed: false };
         }
 
-        debugLogger.error(
-          'trimmedQuery = ' +
-            trimmedQuery +
-            ' isAtCommand(trimmedQuery) = ' +
-            isAtCommand(trimmedQuery),
-        );
         // Handle @-commands (which might involve tool calls)
         if (isAtCommand(trimmedQuery)) {
           const atCommandResult = await handleAtCommand({
@@ -984,10 +971,7 @@ export const useGeminiStream = (
               abortSignal,
               prompt_id!,
             );
-            debugLogger.error(
-              '用户输入的内容 被处理后：' +
-                JSON.stringify(queryToSend, null, 2),
-            );
+
             if (!shouldProceed || queryToSend === null) {
               return;
             }

@@ -245,15 +245,6 @@ export class Turn {
     try {
       // Note: This assumes `sendMessageStream` yields events like
       // { type: StreamEventType.RETRY } or { type: StreamEventType.CHUNK, value: GenerateContentResponse }
-      debugLogger.error(
-        '我是真的和模型交互了实用的模型：' +
-          model +
-          '\n 请求 \n' +
-          JSON.stringify(req, null, 2) +
-          '\n signal \n' +
-          JSON.stringify(signal, null, 2) +
-          '\n',
-      );
       const responseStream = await this.chat.sendMessageStream(
         modelConfigKey,
         req,

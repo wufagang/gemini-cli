@@ -354,10 +354,11 @@ export async function main() {
   });
   consolePatcher.patch();
   registerCleanup(consolePatcher.cleanup);
-  console.error('测试一下');
+
   dns.setDefaultResultOrder(
     validateDnsResolutionOrder(settings.merged.advanced?.dnsResolutionOrder),
   );
+
   // Set a default auth type if one isn't set or is set to a legacy type
   if (
     !settings.merged.security?.auth?.selectedType ||
@@ -386,11 +387,7 @@ export async function main() {
     // TODO(jacobr): refactor loadCliConfig so there is a minimal version
     // that only initializes enough config to enable refreshAuth or find
     // another way to decouple refreshAuth from requiring a config.
-    process.stderr.write(
-      '🚀 Gemini CLI main() sandboxConfig \n' +
-        JSON.stringify(sandboxConfig, null, 2) +
-        '\n',
-    );
+
     if (sandboxConfig) {
       const partialConfig = await loadCliConfig(
         settings.merged,
@@ -486,6 +483,7 @@ export async function main() {
     // Register config for telemetry shutdown
     // This ensures telemetry (including SessionEnd hooks) is properly flushed on exit
     registerTelemetryConfig(config);
+
     const policyEngine = config.getPolicyEngine();
     const messageBus = config.getMessageBus();
     createPolicyUpdater(policyEngine, messageBus);
@@ -504,6 +502,7 @@ export async function main() {
     } catch (e) {
       debugLogger.error('Failed to cleanup expired sessions:', e);
     }
+
     if (config.getListExtensions()) {
       debugLogger.log('Installed extensions:');
       for (const extension of config.getExtensions()) {
@@ -541,6 +540,7 @@ export async function main() {
       await runExitCleanup();
       process.exit(ExitCodes.SUCCESS);
     }
+
     const wasRaw = process.stdin.isRaw;
     if (config.isInteractive() && !wasRaw && process.stdin.isTTY) {
       // Set this as early as possible to avoid spurious characters from
@@ -574,6 +574,7 @@ export async function main() {
     const initAppHandle = startupProfiler.start('initialize_app');
     const initializationResult = await initializeApp(config, settings);
     initAppHandle?.end();
+
     if (
       settings.merged.security?.auth?.selectedType ===
         AuthType.LOGIN_WITH_GOOGLE &&
@@ -582,22 +583,16 @@ export async function main() {
       // Do oauth before app renders to make copying the link possible.
       await getOauthClient(settings.merged.security.auth.selectedType, config);
     }
-    process.stderr.write('🚀 Gemini CLI main() 还继续吗 \n');
+
     if (config.getExperimentalZedIntegration()) {
       return runZedIntegration(config, settings, argv);
     }
-    process.stderr.write('🚀 Gemini CLI main() 还继续吗 222\n');
+
     let input = config.getQuestion();
     const startupWarnings = [
       ...(await getStartupWarnings()),
       ...(await getUserStartupWarnings()),
     ];
-    process.stderr.write(
-      '🚀 Gemini CLI main() 还继续吗 \n input =' +
-        input +
-        'config.isInteractive()=' +
-        config.isInteractive(),
-    );
 
     // Handle --resume flag
     let resumedSessionData: ResumedSessionData | undefined = undefined;
@@ -637,6 +632,7 @@ export async function main() {
 
     await config.initialize();
     startupProfiler.flush(config);
+
     // If not a TTY, read from stdin
     // This is for cases where the user pipes input directly into the command
     let stdinData: string | undefined = undefined;
@@ -724,7 +720,6 @@ export async function main() {
       resumedSessionData,
     });
     // Call cleanup before process.exit, which causes cleanup to not run
-    process.stderr.write('🚀 Gemini CLI main() 退出程序 \n');
     await runExitCleanup();
     process.exit(ExitCodes.SUCCESS);
   }

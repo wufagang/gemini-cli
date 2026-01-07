@@ -521,13 +521,8 @@ export class GeminiClient {
   ): AsyncGenerator<ServerGeminiStreamEvent, Turn> {
     // Re-initialize turn (it was empty before if in loop, or new instance)
     let turn = new Turn(this.getChat(), prompt_id);
+
     this.sessionTurnCount++;
-    /**
-     *  - 控制资源消耗
-        - 避免无限循环对话
-        - 管理API调用次数
-        - 提高系统稳定性
-     */
     if (
       this.config.getMaxSessionTurns() > 0 &&
       this.sessionTurnCount > this.config.getMaxSessionTurns()
@@ -551,11 +546,9 @@ export class GeminiClient {
       modelForLimitCheck,
     );
 
-    //剩余token数
     const remainingTokenCount =
       tokenLimit(modelForLimitCheck) - this.getChat().getLastPromptTokenCount();
 
-    // 达到95%
     if (estimatedRequestTokenCount > remainingTokenCount * 0.95) {
       yield {
         type: GeminiEventType.ContextWindowWillOverflow,
@@ -576,15 +569,13 @@ export class GeminiClient {
     // in the conversation history . The IDE context is not discarded; it will
     // be included in the next regular message sent to the model.
     const history = this.getHistory();
-    debugLogger.error('history \n' + JSON.stringify(history, null, 2));
     const lastMessage =
       history.length > 0 ? history[history.length - 1] : undefined;
-    //检查是否有待处理的工具调用
     const hasPendingToolCall =
       !!lastMessage &&
       lastMessage.role === 'model' &&
       (lastMessage.parts?.some((p) => 'functionCall' in p) || false);
-    debugLogger.error('有待处理的 function call  \n' + hasPendingToolCall);
+
     if (this.config.getIdeMode() && !hasPendingToolCall) {
       const { contextParts, newIdeContext } = this.getIdeContextParts(
         this.forceFullIdeContext || history.length === 0,
@@ -604,18 +595,13 @@ export class GeminiClient {
 
     const controller = new AbortController();
     const linkedSignal = AbortSignal.any([signal, controller.signal]);
-    /**
-     *  通过unproductive_state_confidence 这个变量进行评分，如果不信用度>95% 这个地方就终止循环
-     */
+
     const loopDetected = await this.loopDetector.turnStarted(signal);
     if (loopDetected) {
       yield { type: GeminiEventType.LoopDetected };
       return turn;
     }
 
-    /**
-     * 模型选择这是一个策略模式进行选择使用哪个模型
-     */
     const routingContext: RoutingContext = {
       history: this.getChat().getHistory(/*curated=*/ true),
       request,
@@ -648,18 +634,8 @@ export class GeminiClient {
     const resultStream = turn.run(modelConfigKey, request, linkedSignal);
     let isError = false;
     let isInvalidStream = false;
+
     for await (const event of resultStream) {
-      /**
-       * loopDetector 检查循环是否要终止
-       * 如果工具循环调用5次要终止
-       *  * 判断内容块是否表明存在循环模
-       * 循环检测逻辑：
-       * 1. 检查我们之前是否见过这个哈希值（新的内容块会被存储以供未来比较）
-       * 2. 验证实际内容是否匹配，以防止哈希碰撞
-       * 3. 跟踪这个内容块出现的所有位置
-       * 4. 当同一个内容块在较小的平均距离内（≤ 5倍内容块大小）出现 CONTENT_LOOP_THRESHOLD 次时，
-       *    检测到循环
-       */
       if (this.loopDetector.addAndCheck(event)) {
         yield { type: GeminiEventType.LoopDetected };
         controller.abort();
@@ -708,47 +684,6 @@ export class GeminiClient {
           );
           return turn;
         }
-        // Retry with prompt injection
-        const injectedPrompt = injectPromptIntoRequest(request);
-        yield* this.sendMessageStream(
-          injectedPrompt,
-          signal,
-          prompt_id,
-          boundedTurns - 1,
-          true,
-        );
-        return turn;
-      }
-      if (event.type === GeminiEventType.Error) {
-        return turn;
-      }
-    }
-
-    if (!turn.pendingToolCalls.length && signal && !signal.aborted) {
-      // Check if next speaker check is needed
-      if (this.config.getQuotaErrorOccurred()) {
-        return turn;
-      }
-
-      if (this.config.getSkipNextSpeakerCheck()) {
-        return turn;
-      }
-
-      const nextSpeakerCheck = await checkNextSpeaker(
-        this.getChat(),
-        this.config.getBaseLlmClient(),
-        signal,
-        prompt_id,
-      );
-      logNextSpeakerCheck(
-        this.config,
-        new NextSpeakerCheckEvent(
-          prompt_id,
-          turn.finishReason?.toString() || '',
-          nextSpeakerCheck?.next_speaker || '',
-        ),
-      );
-      if (nextSpeakerCheck?.next_speaker === 'model') {
         const nextRequest = [{ text: 'System: Please continue.' }];
         // Recursive call - update turn with result
         turn = yield* this.sendMessageStream(
