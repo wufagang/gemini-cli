@@ -56,3 +56,14 @@ patch_output.log
 
 .genkit
 .gemini-clipboard/
+
+
+.joycode
+package-lock.json
+data/*
+data
+.claude
+.gcp
+.gemini
+.husky
+.vscode
