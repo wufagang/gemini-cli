@@ -59,7 +59,7 @@ function findLastIndex<T>(
   predicate: (value: T, index: number, obj: T[]) => unknown,
 ): number {
   for (let i = array.length - 1; i >= 0; i--) {
-    if (predicate(array[i]!, i, array)) {
+    if (predicate(array[i], i, array)) {
       return i;
     }
   }
@@ -192,7 +192,7 @@ function VirtualizedList<T>(
         return { index: 0, offset: 0 };
       }
 
-      return { index, offset: scrollTop - offsets[index]! };
+      return { index, offset: scrollTop - offsets[index] };
     },
     [],
   );
@@ -481,6 +481,7 @@ function VirtualizedList<T>(
       width="100%"
       height="100%"
       flexDirection="column"
+      paddingRight={1}
     >
       <Box flexShrink={0} width="100%" flexDirection="column">
         <Box height={topSpacerHeight} flexShrink={0} />

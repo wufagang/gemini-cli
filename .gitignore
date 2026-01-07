@@ -55,8 +55,4 @@ gha-creds-*.json
 patch_output.log
 
 .genkit
-
-.joycode
-package-lock.json
-data/*
-data
+.gemini-clipboard/
