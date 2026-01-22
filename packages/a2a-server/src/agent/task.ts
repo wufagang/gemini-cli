@@ -376,10 +376,16 @@ export class Task {
       }
 
       if (tc.status === 'awaiting_approval' && tc.confirmationDetails) {
-        this.pendingToolConfirmationDetails.set(
-          tc.request.callId,
-          tc.confirmationDetails,
-        );
+        // Only store ToolCallConfirmationDetails (with onConfirm method) in the map
+        if (
+          'onConfirm' in tc.confirmationDetails &&
+          typeof tc.confirmationDetails.onConfirm === 'function'
+        ) {
+          this.pendingToolConfirmationDetails.set(
+            tc.request.callId,
+            tc.confirmationDetails,
+          );
+        }
       }
 
       // Only send an update if the status has actually changed.
@@ -411,11 +417,17 @@ export class Task {
       );
       toolCalls.forEach((tc: ToolCall) => {
         if (tc.status === 'awaiting_approval' && tc.confirmationDetails) {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          (tc.confirmationDetails).onConfirm(
-            ToolConfirmationOutcome.ProceedOnce,
-          );
-          this.pendingToolConfirmationDetails.delete(tc.request.callId);
+          // Check if confirmationDetails has onConfirm method (ToolCallConfirmationDetails type)
+          if (
+            'onConfirm' in tc.confirmationDetails &&
+            typeof tc.confirmationDetails.onConfirm === 'function'
+          ) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            tc.confirmationDetails.onConfirm(
+              ToolConfirmationOutcome.ProceedOnce,
+            );
+            this.pendingToolConfirmationDetails.delete(tc.request.callId);
+          }
         }
       });
       return;
